@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О платформе | ONTHEGO</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="about.css">
+</head>
+<body>
+
+    <!-- Ambient Glow Effects -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <!-- Оверлей для мобильного меню -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Мобильное меню с крестиком -->
+    <nav class="mobile-nav" id="mobileNav" aria-hidden="true">
+        <div class="mobile-close-btn" id="mobileCloseBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+        
+        <a href="about.html" class="nav-link" onclick="closeMobileMenu()">О платформе</a>
+        <a href="../index/index.html#program" class="nav-link" onclick="closeMobileMenu()">Программа</a>
+        <a href="../index/index.html#reviews" class="nav-link" onclick="closeMobileMenu()">Отзывы</a>
+        <a href="../index/index.html#faq" class="nav-link" onclick="closeMobileMenu()">FAQ</a>
+        
+        <div class="mobile-auth-actions">
+            <button class="mobile-login-btn" id="loginBtnMobile">Вход</button>
+            <a href="#" class="btn btn-primary" id="registerBtnMobile" style="padding: 14px 28px; font-size: 1rem;">Регистрация</a>
+        </div>
+    </nav>
+
+    <!-- Модальные окна для входа/регистрации -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-close" id="closeLoginModal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            
+            <h3 style="text-align: center; font-size: 1.8rem; margin-bottom: 15px;">Вход в аккаунт</h3>
+            <p style="text-align: center; color: var(--text-gray-400); margin-bottom: 25px;">
+                Для входа в аккаунт перейдите на основную платформу ONTHEGO. Там вы сможете авторизоваться и получить доступ ко всем материалам курса.
+            </p>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-glass" id="cancelLoginBtn">Отмена</button>
+                <button class="btn btn-primary" id="goToPlatformLoginBtn">Перейти на платформу</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-close" id="closeRegisterModal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+            </div>
+            
+            <h3 style="text-align: center; font-size: 1.8rem; margin-bottom: 15px;">Создание аккаунта</h3>
+            <p style="text-align: center; color: var(--text-gray-400); margin-bottom: 25px;">
+                Регистрация аккаунта происходит на основной платформе ONTHEGO. После создания аккаунта вы получите доступ ко всем модулям курса и сможете начать обучение.
+            </p>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-glass" id="cancelRegisterBtn">Отмена</button>
+                <button class="btn btn-primary" id="goToPlatformRegisterBtn">Перейти на платформу</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-glass">
+            <a href="../index/index.html" class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                ONTHEGO
+            </a>
+
+            <nav class="nav-menu">
+                <a href="about.html" class="nav-link">О платформе</a>
+                <a href="../index/index.html#program" class="nav-link">Программа</a>
+                <a href="../index/index.html#reviews" class="nav-link">Отзывы</a>
+                <a href="../index/index.html#faq" class="nav-link">FAQ</a>
+            </nav>
+
+            <div class="auth-actions">
+                <a href="#" class="nav-link" id="loginBtnHeader">Вход</a>
+                <a href="#" class="btn btn-primary" style="padding: 10px 24px; font-size: 0.9rem;" id="registerBtnHeader">Регистрация</a>
+            </div>
+
+            <button class="burger-menu" id="burgerMenu" aria-label="Открыть меню" aria-expanded="false">
+                <span class="burger-line"></span>
+                <span class="burger-line"></span>
+                <span class="burger-line"></span>
+                <div class="burger-close">
+                    <div class="burger-close-line"></div>
+                    <div class="burger-close-line"></div>
+                </div>
+            </button>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main>
+        <!-- Hero Section -->
+        <section style="min-height: 80vh; display: flex; align-items: center; padding-top: 120px; position: relative;">
+            <div class="container">
+                <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 60px; align-items: center;" class="hero-content-grid">
+                    <div class="reveal-on-load">
+                        <h1 class="section-title">О платформе 
+                            <span class="glitch-text text-gradient" data-text="ONTHEGO">ONTHEGO</span>
+                        </h1>
+                        <p class="text-lead" style="margin-bottom: 40px;">
+                            Мы создаем будущее кибербезопасности, предоставляя современные образовательные решения для нового поколения специалистов.
+                        </p>
+                    </div>
+
+                    <div class="hero-visual reveal-on-load" style="transition-delay: 0.2s;">
+                        <div class="rotating-shape"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mission Section -->
+        <section class="container" style="padding: 100px 0;">
+            <div class="cyber-card reveal-on-load">
+                <div class="mission-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Наша <span class="text-gradient">миссия</span></h2>
+                        <p style="color: var(--text-gray-400); margin-bottom: 20px; font-size: 1.1rem;">
+                            Сделать кибербезопасность доступной для всех. Мы верим, что каждый должен иметь возможность освоить навыки защиты цифрового пространства, независимо от начального уровня подготовки.
+                        </p>
+                        <p style="color: var(--text-gray-400); font-size: 1.1rem;">
+                            ONTHEGO — это не просто образовательная платформа. Это экосистема, где теория встречается с практикой, а студенты становятся экспертами, способными противостоять реальным киберугрозам.
+                        </p>
+                    </div>
+                    <div class="mission-image">
+                        <img src="https://i.pinimg.com/736x/94/82/e4/9482e4d90706842605e05a9cd412c768.jpg" 
+                             alt="Кибербезопасность"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                        <div class="mission-overlay">
+                            <div class="year-badge">2024</div>
+                            <div class="year-text">Год основания</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="container" style="padding: 100px 0;">
+            <div class="reveal-up" style="text-align: center; margin-bottom: 60px;">
+                <h2 class="section-title">Наша <span class="text-gradient">команда</span></h2>
+                <p class="text-lead" style="margin: 0 auto;">
+                    Эксперты с многолетним опытом в разработке и кибербезопасности
+                </p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card reveal-up">
+                    <div class="team-avatar">ВБ</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px;">Беляев Валентин</h3>
+                    <p style="color: var(--primary-light); margin-bottom: 15px;">Senior Fullstack Developer</p>
+                    <p style="color: var(--text-gray-400); margin-bottom: 20px;">
+                        8+ лет опыта в разработке. Специализируется на создании безопасных веб-приложений и архитектуре распределенных систем.
+                    </p>
+                    <div class="team-social">
+                        <a href="https://t.me/vakamake" class="social-icon" target="_blank">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="team-card reveal-up" style="transition-delay: 0.1s;">
+                    <div class="team-avatar">НК</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px;">Корнев Никита</h3>
+                    <p style="color: var(--primary-light); margin-bottom: 15px;">Senior Fullstack Developer</p>
+                    <p style="color: var(--text-gray-400); margin-bottom: 20px;">
+                        7+ лет в разработке. Эксперт по микросервисной архитектуре, DevOps и автоматизации процессов разработки безопасных приложений.
+                    </p>
+                    <div class="team-social">
+                        <a href="https://t.me/LettersTnnox" class="social-icon" target="_blank">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section class="container" style="padding: 100px 0;">
+            <div class="reveal-up" style="text-align: center; margin-bottom: 60px;">
+                <h2 class="section-title">Наши <span class="text-gradient">достижения</span></h2>
+                <p class="text-lead" style="margin: 0 auto;">
+                    Признание качества нашей образовательной методологии
+                </p>
+            </div>
+
+            <div class="achievement-grid">
+                <div class="achievement-card reveal-up">
+                    <div class="achievement-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 10px;">Лучший стартап 2024</h3>
+                    <p style="color: var(--text-gray-400); font-size: 0.95rem;">
+                        Награда TechCrunch Disrupt в категории "EdTech инновации"
+                    </p>
+                </div>
+
+                <div class="achievement-card reveal-up" style="transition-delay: 0.1s;">
+                    <div class="achievement-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 10px;">2500+ студентов</h3>
+                    <p style="color: var(--text-gray-400); font-size: 0.95rem;">
+                        Успешно завершили обучение и начали карьеру в кибербезопасности
+                    </p>
+                </div>
+
+                <div class="achievement-card reveal-up" style="transition-delay: 0.2s;">
+                    <div class="achievement-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 10px;">Сертификация ISO 27001</h3>
+                    <p style="color: var(--text-gray-400); font-size: 0.95rem;">
+                        Международный стандарт управления информационной безопасностью
+                    </p>
+                </div>
+
+                <div class="achievement-card reveal-up" style="transition-delay: 0.3s;">
+                    <div class="achievement-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 10px;">96% успеваемости</h3>
+                    <p style="color: var(--text-gray-400); font-size: 0.95rem;">
+                        Средний показатель завершения курсов среди наших студентов
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Section -->
+        <section class="container" style="padding: 100px 0;">
+            <div class="cyber-card reveal-up">
+                <div class="tech-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+                    <div class="tech-image">
+                        <img src="https://i.pinimg.com/736x/45/da/d3/45dad3d690d7b8f5827c8e8de428eeea.jpg" 
+                             alt="Технологии кибербезопасности"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                        <div class="tech-overlay"></div>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Наша <span class="text-gradient">технология</span></h2>
+                        <p style="color: var(--text-gray-400); margin-bottom: 20px; font-size: 1.1rem;">
+                            Мы используем передовые технологии для создания иммерсивной обучающей среды:
+                        </p>
+                        <ul style="display: flex; flex-direction: column; gap: 15px;">
+                            <li style="display: flex; gap: 15px; align-items: flex-start;">
+                                <div style="width: 8px; height: 8px; background: var(--primary-vivid); border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                <span style="color: var(--text-gray-100);">Облачные лаборатории с реальными инструментами SOC</span>
+                            </li>
+                            <li style="display: flex; gap: 15px; align-items: flex-start;">
+                                <div style="width: 8px; height: 8px; background: var(--primary-vivid); border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                <span style="color: var(--text-gray-100);">ИИ-ассистент для персонализированного обучения</span>
+                            </li>
+                            <li style="display: flex; gap: 15px; align-items: flex-start;">
+                                <div style="width: 8px; height: 8px; background: var(--primary-vivid); border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                <span style="color: var(--text-gray-100);">Геймификация с системой уровней и достижений</span>
+                            </li>
+                            <li style="display: flex; gap: 15px; align-items: flex-start;">
+                                <div style="width: 8px; height: 8px; background: var(--primary-vivid); border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                <span style="color: var(--text-gray-100);">Регулярное обновление контента на основе актуальных угроз</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="container" style="padding: 100px 0;">
+            <div class="cyber-card reveal-up" style="text-align: center; padding: 80px 40px; border-color: var(--primary-accent); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(124, 58, 237, 0.2) 0%, transparent 70%); pointer-events: none;"></div>
+                
+                <h2 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 20px; position: relative;">
+                    Присоединяйтесь к <span class="text-gradient">революции</span> в обучении</h2>
+                <p class="text-lead" style="margin: 0 auto 40px; position: relative;">
+                    Станьте частью сообщества, которое формирует будущее кибербезопасности.
+                </p>
+                <a href="../main.html" class="btn btn-primary" style="padding: 22px 50px; font-size: 1.1rem;">Начать обучение</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 50px; margin-bottom: 60px;">
+                
+                <div style="grid-column: span 1; min-width: 250px;">
+                    <a href="../index/index.html" class="logo" style="margin-bottom: 20px; color: white;">
+                        <div class="logo-icon" style="width: 28px; height: 28px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        ONTHEGO
+                    </a>
+                    <p style="color: var(--text-gray-600); font-size: 0.9rem;">
+                        Платформа нового поколения для тех, кто строит безопасное цифровое будущее.
+                    </p>
+                </div>
+
+                <div>
+                    <h5 style="color: white; margin-bottom: 20px; font-size: 1.1rem;">Платформа</h5>
+                    <ul style="display: flex; flex-direction: column; gap: 10px;">
+                        <li><a href="about.html" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">О платформе</a></li>
+                        <li><a href="../index/index.html#program" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">Программа</a></li>
+                        <li><a href="../index/index.html#format" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">Формат</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 style="color: white; margin-bottom: 20px; font-size: 1.1rem;">Поддержка</h5>
+                    <ul style="display: flex; flex-direction: column; gap: 10px;">
+                        <li><a href="../index/index.html#faq" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">FAQ</a></li>
+                        <li><a href="../contacts/contacts.html" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">Контакты</a></li>
+                        <li><a href="../privacy/privacy.html" style="color: var(--text-gray-400); font-size: 0.9rem; transition: 0.3s;" 
+                               onmouseover="this.style.color='white'" onmouseout="this.style.color='#a3a3a3'">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                &copy; 2025 ONTHEGO. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script src="about.js"></script>
+</body>
+</html>
