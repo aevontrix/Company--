@@ -1,15 +1,16 @@
 import os
 from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.security.websocket import AllowedHostsOriginValidator
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'onthego.settings.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'onthego.settings')
 
-# Django ASGI application
+# ⚠️ CRITICAL: Initialize Django ASGI application early to populate AppRegistry
+# This MUST be called before importing code that may import ORM models
 django_asgi_app = get_asgi_application()
 
-# Import после инициализации Django
-from onthego.routing import websocket_urlpatterns  # ✅ FIX: Import all WebSocket routes
+# ✅ NOW it's safe to import code that uses Django models/apps
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.security.websocket import AllowedHostsOriginValidator
+from onthego.routing import websocket_urlpatterns
 from onthego.middleware import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { coursesAPI } from '@/lib/api';
+import { coursesAPI, learningAPI, apiRequest } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToastStore } from '@/lib/store/toastStore';
 import {
@@ -101,10 +101,10 @@ export default function CourseDetailPage() {
       try {
         setLoading(true);
         setError(null);
-        setSectionsLoaded(false);
+        // ✅ FIX: Don't reset sectionsLoaded - it causes sections to disappear
         const courseData = await coursesAPI.getCourseBySlug(slug);
 
-        setCourse({
+        setCourse(prev => ({
           id: courseData.id.toString(),
           slug: courseData.slug,
           title: courseData.title,
@@ -133,8 +133,9 @@ export default function CourseDetailPage() {
           requirements: courseData.prerequisites
             ? courseData.prerequisites.split('\n').filter(s => s.trim()).map(s => s.trim())
             : [],
-          sections: [],
-        });
+          // ✅ FIX: Preserve existing sections if already loaded
+          sections: prev?.sections || [],
+        }));
       } catch (err: any) {
         console.error('Failed to load course:', err);
         setError(err?.message || 'Failed to load course data');
@@ -154,7 +155,38 @@ export default function CourseDetailPage() {
       try {
         const structure = await coursesAPI.getCourseStructure(slug);
 
-        const sectionsData = structure.modules.map((module: any) => ({
+        // ✅ FIX: Load lesson completion status if user is enrolled
+        let completedLessonIds: Set<string> = new Set();
+        if (user && course.id) {
+          try {
+            // Get user's enrollment for this course
+            const enrollmentsResponse: any = await learningAPI.getEnrollments();
+            const enrollments = enrollmentsResponse.results || enrollmentsResponse;
+            const enrollment = enrollments.find((e: any) => e.course === course.id);
+
+            if (enrollment) {
+              // Get all lesson progress for the user
+              const progressResponse: any = await apiRequest('/api/learning/lesson-progress/');
+              const allProgress = progressResponse.results || progressResponse;
+
+              // Filter to completed lessons in this course
+              const lessonIdsInCourse = new Set(
+                structure.modules.flatMap((m: any) => m.lessons.map((l: any) => l.id.toString()))
+              );
+
+              allProgress.forEach((progress: any) => {
+                const lessonId = progress.lesson.toString();
+                if (progress.status === 'completed' && lessonIdsInCourse.has(lessonId)) {
+                  completedLessonIds.add(lessonId);
+                }
+              });
+            }
+          } catch (progressErr) {
+            console.error('Failed to load lesson progress:', progressErr);
+          }
+        }
+
+        const sectionsData = structure.modules.map((module: any, index: number) => ({
           id: module.id.toString(),
           title: module.title,
           lessons: module.lessons.map((lesson: any) => {
@@ -169,12 +201,12 @@ export default function CourseDetailPage() {
               id: lesson.id.toString(),
               title: lesson.title,
               duration: `${lesson.duration_minutes || 0} мин`,
-              isCompleted: false,
+              isCompleted: completedLessonIds.has(lesson.id.toString()),  // ✅ FIX: Use actual completion status
               isLocked: !lesson.is_free_preview && !user,
               type: lessonType,
             };
           }),
-          isExpanded: false,
+          isExpanded: index === 0,  // ✅ FIX: First section expanded by default
         }));
 
         setCourse(prev => prev ? {
@@ -195,12 +227,13 @@ export default function CourseDetailPage() {
 
   const handleToggleSection = (sectionId: string) => {
     if (!course) return;
-    setCourse({
-      ...course,
-      sections: course.sections.map(s =>
+    // ✅ FIX: Use functional update to avoid race conditions
+    setCourse(prev => prev ? {
+      ...prev,
+      sections: prev.sections.map(s =>
         s.id === sectionId ? { ...s, isExpanded: !s.isExpanded } : s
       ),
-    });
+    } : null);
   };
 
   const handleEnroll = async () => {
@@ -216,7 +249,8 @@ export default function CourseDetailPage() {
 
       if (!course.isEnrolled) {
         await coursesAPI.enrollInCourse(course.slug);
-        setCourse({ ...course, isEnrolled: true, progress: 0 });
+        // ✅ FIX: Use functional update to preserve sections
+        setCourse(prev => prev ? { ...prev, isEnrolled: true, progress: 0 } : null);
         addToast({
           type: 'success',
           title: 'Успешная запись!',

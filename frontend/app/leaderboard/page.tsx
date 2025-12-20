@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { gamificationAPI } from '@/lib/api';
 import { connectLeaderboard, wsService } from '@/lib/websocket';
-import { Trophy, Flame, Zap, Timer, ChevronUp, ChevronDown, Search } from 'lucide-react';
+import { Trophy, Flame, Zap, Timer, ChevronUp, ChevronDown, Search, Wifi, WifiOff } from 'lucide-react';
 
 interface LeaderboardEntry {
   rank: number;
@@ -15,6 +15,7 @@ interface LeaderboardEntry {
   streak: number;
   rankChange: number;
   isYou?: boolean;
+  recentlyUpdated?: boolean; // ✅ Track recently updated entries
 }
 
 type TabType = 'global' | 'weekly' | 'friends';
@@ -26,6 +27,9 @@ export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState({ days: 3, hours: 14, minutes: 27 });
+  // ✅ Real-time connection status
+  const [isConnected, setIsConnected] = useState(false);
+  const updateTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Load leaderboard
   useEffect(() => {
@@ -64,15 +68,24 @@ export default function LeaderboardPage() {
     const handleLeaderboardUpdate = (data: any) => {
       console.log('🏆 Leaderboard update received:', data);
 
+      // ✅ Track connection status
+      if (data.type === 'connection_established') {
+        setIsConnected(true);
+        return;
+      }
+
       if (data.type === 'user_xp_updated') {
+        const updatedUserId = data.user_id?.toString();
+
         // Update specific user's XP and level in the leaderboard
         setLeaderboard((prev) => {
           const updatedLeaderboard = prev.map((entry) => {
-            if (entry.userId === data.user_id?.toString()) {
+            if (entry.userId === updatedUserId) {
               return {
                 ...entry,
                 xp: data.xp || entry.xp,
                 level: data.level || entry.level,
+                recentlyUpdated: true, // ✅ Mark as recently updated
               };
             }
             return entry;
@@ -93,6 +106,26 @@ export default function LeaderboardPage() {
             };
           });
         });
+
+        // ✅ Clear "recently updated" flag after 3 seconds
+        if (updatedUserId) {
+          // Clear existing timeout for this user
+          const existingTimeout = updateTimeoutRef.current.get(updatedUserId);
+          if (existingTimeout) clearTimeout(existingTimeout);
+
+          const timeout = setTimeout(() => {
+            setLeaderboard((prev) =>
+              prev.map((entry) =>
+                entry.userId === updatedUserId
+                  ? { ...entry, recentlyUpdated: false }
+                  : entry
+              )
+            );
+            updateTimeoutRef.current.delete(updatedUserId);
+          }, 3000);
+
+          updateTimeoutRef.current.set(updatedUserId, timeout);
+        }
       }
 
       if (data.type === 'ranking_changed') {
@@ -102,14 +135,15 @@ export default function LeaderboardPage() {
       }
     };
 
-    // Connect to leaderboard WebSocket
-    const ws = connectLeaderboard(handleLeaderboardUpdate);
+    // ✅ FIX: Connect async, disconnect always on cleanup
+    connectLeaderboard(handleLeaderboardUpdate);
 
     return () => {
-      // Cleanup WebSocket connection
-      if (ws) {
-        wsService.disconnect('leaderboard');
-      }
+      wsService.disconnect('leaderboard');
+      setIsConnected(false);
+      // Clear all update timeouts
+      updateTimeoutRef.current.forEach((timeout) => clearTimeout(timeout));
+      updateTimeoutRef.current.clear();
     };
   }, [user]);
 
@@ -144,11 +178,24 @@ export default function LeaderboardPage() {
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold font-display mb-2 flex items-center gap-3">
-          <Trophy className="text-yellow-400" />
-          Рейтинг
-        </h1>
-        <p className="text-text-secondary">Соревнуйтесь с учащимися со всего мира</p>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-4xl font-bold font-display mb-2 flex items-center gap-3">
+              <Trophy className="text-yellow-400" />
+              Рейтинг
+            </h1>
+            <p className="text-text-secondary">Соревнуйтесь с учащимися со всего мира</p>
+          </div>
+          {/* ✅ Real-time connection indicator */}
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+            isConnected
+              ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+              : 'bg-red-500/10 border border-red-500/30 text-red-400'
+          }`}>
+            {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+            <span>{isConnected ? 'Live' : 'Offline'}</span>
+          </div>
+        </div>
       </div>
 
       {/* Tournament Timer */}
@@ -258,9 +305,11 @@ export default function LeaderboardPage() {
         {!loading && filteredLeaderboard.map((entry, index) => (
           <div
             key={entry.userId}
-            className={`grid grid-cols-12 gap-4 p-4 items-center transition-colors hover:bg-white/5 ${
+            className={`grid grid-cols-12 gap-4 p-4 items-center transition-all duration-300 hover:bg-white/5 ${
               entry.isYou ? 'bg-primary/10 border-l-2 border-l-primary' : ''
-            } ${index < filteredLeaderboard.length - 1 ? 'border-b border-white/5' : ''}`}
+            } ${entry.recentlyUpdated ? 'bg-green-500/10 animate-pulse' : ''} ${
+              index < filteredLeaderboard.length - 1 ? 'border-b border-white/5' : ''
+            }`}
             style={{ animationDelay: `${index * 30}ms` }}
           >
             {/* Rank */}

@@ -24,7 +24,7 @@ class DailyActivitySerializer(serializers.ModelSerializer):
         model = DailyActivity
         fields = [
             'id', 'user', 'date', 'time_spent', 'lessons_completed',
-            'quizzes_taken', 'streak_preserved', 'created_at', 'updated_at'
+            'quizzes_taken', 'xp_earned', 'streak_preserved', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

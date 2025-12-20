@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { friendsAPI, Friend, FriendRequest } from '@/lib/api';
+import { friendsAPI, Friend, FriendRequest, learningAPI, apiRequest } from '@/lib/api';
 import { User, LogOut, Trophy, Flame, Clock, BookOpen, Award, Users, UserPlus, Check, X, ChevronRight } from 'lucide-react';
 import UserProgress from '@/components/UserProgress';
+import { wsService } from '@/lib/websocket';
 
 interface Achievement {
   id: string;
@@ -16,6 +17,11 @@ interface Achievement {
   unlockedAt: Date | null;
 }
 
+interface RecentActivity {
+  lesson_title: string;
+  completed_at: string;
+}
+
 export default function ProfilePage() {
   const { user, logout: authLogout } = useAuth();
   const router = useRouter();
@@ -24,31 +30,99 @@ export default function ProfilePage() {
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
   const [loadingFriends, setLoadingFriends] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'achievements' | 'friends'>('overview');
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
   useEffect(() => {
-    const loadFriendsData = async () => {
+    const loadRecentActivity = async () => {
       if (!user) return;
 
       try {
-        setLoadingFriends(true);
-        const [friendsData, pendingData, sentData] = await Promise.all([
-          friendsAPI.getFriends(),
-          friendsAPI.getPendingRequests(),
-          friendsAPI.getSentRequests(),
-        ]);
+        // Get completed lessons from all lesson progress
+        const response: any = await apiRequest('/api/learning/lesson-progress/?status=completed');
+        const completedLessons = response.results || response;
 
-        setFriends(friendsData.results || []);
-        setPendingRequests(pendingData.results || []);
-        setSentRequests(sentData.results || []);
+        // Sort by completion date and get latest 5
+        const activities: RecentActivity[] = completedLessons
+          .sort((a: any, b: any) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
+          .slice(0, 5)
+          .map((progress: any) => ({
+            lesson_title: progress.lesson_title || `Урок #${progress.lesson}`,
+            completed_at: progress.completed_at,
+          }));
+
+        setRecentActivity(activities);
       } catch (error) {
-        console.error('Error loading friends:', error);
-      } finally {
-        setLoadingFriends(false);
+        console.error('Error loading recent activity:', error);
       }
     };
 
+    loadRecentActivity();
+  }, [user]);
+
+  const loadFriendsData = async () => {
+    if (!user) return;
+
+    try {
+      setLoadingFriends(true);
+      const [friendsData, pendingData, sentData] = await Promise.all([
+        friendsAPI.getFriends(),
+        friendsAPI.getPendingRequests(),
+        friendsAPI.getSentRequests(),
+      ]);
+
+      setFriends(friendsData.results || []);
+      setPendingRequests(pendingData.results || []);
+      setSentRequests(sentData.results || []);
+    } catch (error) {
+      console.error('Error loading friends:', error);
+    } finally {
+      setLoadingFriends(false);
+    }
+  };
+
+  useEffect(() => {
     loadFriendsData();
   }, [user]);
+
+  // ✅ NEW: WebSocket for real-time profile updates (friends, requests)
+  useEffect(() => {
+    if (!user) return;
+
+    const handleProfileMessage = (data: any) => {
+      console.log('👤 Profile update:', data);
+
+      switch (data.type) {
+        case 'profile_update':
+          // Generic profile update - reload all friends data
+          loadFriendsData();
+          break;
+
+        case 'friend_request_received':
+          // New friend request received
+          console.log('New friend request from:', data.from_user?.first_name);
+          loadFriendsData();
+          break;
+
+        case 'friend_request_accepted':
+          // Someone accepted your friend request
+          console.log('Friend request accepted!');
+          loadFriendsData();
+          break;
+
+        case 'friend_added':
+          // Friend was successfully added
+          loadFriendsData();
+          break;
+      }
+    };
+
+    // ✅ FIX: Connect async, disconnect always on cleanup
+    wsService.connect('profile', handleProfileMessage);
+
+    return () => {
+      wsService.disconnect('profile');
+    };
+  }, [user?.id]);
 
   const handleLogout = async () => {
     try {
@@ -226,13 +300,23 @@ export default function ProfilePage() {
               Недавняя активность
             </h3>
             <div className="space-y-3">
-              {user.completed_courses && user.completed_courses.length > 0 ? (
-                user.completed_courses.slice(0, 5).map((courseId: string, index: number) => (
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
                   <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                     <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
                       <Check size={16} className="text-green-400" />
                     </div>
-                    <span className="text-sm">Курс #{courseId} завершен</span>
+                    <div className="flex-1">
+                      <span className="text-sm block">{activity.lesson_title}</span>
+                      <span className="text-xs text-text-secondary">
+                        {new Date(activity.completed_at).toLocaleDateString('ru-RU', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
                   </div>
                 ))
               ) : (

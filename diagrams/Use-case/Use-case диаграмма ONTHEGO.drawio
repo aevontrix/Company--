@@ -1,0 +1,310 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0" version="29.2.7">
+  <diagram name="Page-1" id="P_tVa76loP4KoRkAnq7y">
+    <mxGraphModel dx="8053" dy="3583" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#121212,#121212)" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-6" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;rounded=0;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeWidth=3;fontStyle=1;fontSize=16;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="2680" width="2080" x="-1280" y="241" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-7" parent="1" style="html=1;whiteSpace=wrap;rounded=0;fontSize=24;strokeWidth=3;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Система обучения ONTHEGO" vertex="1">
+          <mxGeometry height="80" width="507.6" x="-1280" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-10" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="720" width="1120" x="-1160" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-14" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="1100" width="600" x="80" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-38" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="840" width="1120" x="-1160" y="1280" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-39" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="480" width="1120" x="-1160" y="2280" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-42" parent="1" style="html=1;whiteSpace=wrap;fillColor=none;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="" vertex="1">
+          <mxGeometry height="1100" width="600" x="80" y="1660" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-45" parent="1" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=24;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="Доступ и информация" vertex="1">
+          <mxGeometry height="80" width="1120" x="-1160" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-46" parent="1" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=24;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="Обучение и механики" vertex="1">
+          <mxGeometry height="80" width="1120" x="-1160" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-47" parent="1" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=24;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="Геймификация и профиль" vertex="1">
+          <mxGeometry height="80" width="1120" x="-1160" y="2200" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-48" parent="1" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=24;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="Социальное" vertex="1">
+          <mxGeometry height="80" width="600" x="80" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-49" parent="1" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=24;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="Администрирование" vertex="1">
+          <mxGeometry height="80" width="600" x="80" y="1580" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-50" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Просматривать общую информацию" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Просматривать каталог курсов" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-110" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeWidth=3;fontSize=15;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-60">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-112" connectable="0" parent="lue6Lpo2OR-2nPCUPRvv-110" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry relative="1" x="0.0487" y="2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Регистрация" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-58" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Авторизация" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-59" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Выход из системы" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-60" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Валидация данных" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-111" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;dashed=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-58">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-113" connectable="0" parent="lue6Lpo2OR-2nPCUPRvv-111" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);labelBackgroundColor=light-dark(#000000,#000000);" value="«extend»" vertex="1">
+          <mxGeometry relative="1" x="-0.0519" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Восстановить пароль" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-69" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Записаться на курс" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1360" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-123" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-70" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-71">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-124" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-70" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;dashed=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-79">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-125" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-70" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;exitX=0.991;exitY=0.603;exitDx=0;exitDy=0;dashed=1;startArrow=classic;startFill=1;endArrow=none;endFill=0;exitPerimeter=0;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-73">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Проходить курс/урок" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-71" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Сохранять прогресс" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="1360" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-126" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-72" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.013;entryY=0.579;entryDx=0;entryDy=0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;dashed=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-79">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-72" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Проходить тест" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1720" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Потерять жизнь (Рестар модуля)" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="1610" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-77" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Режим Pomodoro" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1960" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-78" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Использовать AI-помощника" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-79" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Начислять XP" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-80" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Мини-тесты / Карточки" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="1840" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-133" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-81" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;dashed=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-84">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-134" edge="1" parent="1" source="lue6Lpo2OR-2nPCUPRvv-81" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-85">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-81" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Смотреть статистику" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="2360" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-82" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Смотреть рейтинг" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="2480" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-83" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Управлять профилем" vertex="1">
+          <mxGeometry height="80" width="240" x="-1080" y="2600" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-84" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Подсчет дневной активности" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="2360" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-85" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="История активности" vertex="1">
+          <mxGeometry height="80" width="240" x="-600" y="2480" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-86" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Личные сообщения" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-87" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Групповые чаты" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-88" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Добавлять в друзья" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-89" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Комментировать" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="1210" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-90" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Управлять курсами" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="1880" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Управлять пользователями" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="2060" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-92" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Назначать роли" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="2260" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=3;fontStyle=1;fontSize=16;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Модерировать контент" vertex="1">
+          <mxGeometry height="80" width="240" x="260" y="2460" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-105" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;endArrow=classic;endFill=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-50">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-106" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;endArrow=classic;endFill=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-56">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-107" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-57">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-108" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-58">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-109" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-59">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="760" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-94" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=3;fontSize=24;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Гость" vertex="1">
+          <mxGeometry height="320" width="160" x="-1560" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-104" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=block;endFill=0;startSize=6;endSize=30;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1480" y="1800" as="sourcePoint" />
+            <mxPoint x="-1480" y="1000" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-115" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-70">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-117" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-72">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-118" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-80">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-119" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-77">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-120" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-81">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-121" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-82">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-122" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-83">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-95" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=3;fontSize=24;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;strokeColor=light-dark(#FFFFFF,#FFFFFF);" value="Пользователь" vertex="1">
+          <mxGeometry height="320" width="160" x="-1560" y="1860" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-137" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-86">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-138" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;entryX=1.004;entryY=0.547;entryDx=0;entryDy=0;entryPerimeter=0;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-87">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-139" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-88">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-140" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-89">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-141" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-90">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-142" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-91">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-144" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-92">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-145" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-93">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="910" y="1600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-96" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeWidth=3;fontSize=24;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);fillColor=none;" value="Администратор" vertex="1">
+          <mxGeometry height="320" width="160" x="920" y="1430" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-114" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.004;entryY=0.493;entryDx=0;entryDy=0;strokeWidth=3;entryPerimeter=0;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-69">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-116" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.071;entryY=0.429;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=3;fontColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="lue6Lpo2OR-2nPCUPRvv-38">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1390" y="2040" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-128" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=16;fontStyle=1;rotation=30;fontColor=light-dark(#FFFFFF,#FFFFFF);labelBackgroundColor=light-dark(#000000,#000000);" value="«extend»" vertex="1">
+          <mxGeometry x="-740" y="1577" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-130" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry x="-719" y="1518" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-131" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;rotation=-25;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry x="-714" y="1455" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-132" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;rotation=-45;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry x="-741" y="1663" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-135" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry x="-719" y="2398" as="geometry" />
+        </mxCell>
+        <mxCell id="lue6Lpo2OR-2nPCUPRvv-136" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=light-dark(#000000,#000000);fontSize=16;fontStyle=1;rotation=30;fontColor=light-dark(#FFFFFF,#FFFFFF);" value="«include»" vertex="1">
+          <mxGeometry x="-729" y="2452" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

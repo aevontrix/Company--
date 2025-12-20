@@ -3,6 +3,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
+from onthego.sanitizers import sanitize_message, sanitize_username
 
 class ChatConsumer(AsyncWebsocketConsumer):
     """WebSocket для чата"""
@@ -24,21 +25,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Это предотвращает мигание и дублирование при реконнекте
 
         # Уведомляем других что пользователь подключился
+        # ✅ FIX: Sanitize username
+        safe_username = sanitize_username(self.scope["user"].username or self.scope["user"].email)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'user_join',
-                'username': self.scope["user"].username,
+                'username': safe_username,
             }
         )
     
     async def disconnect(self, close_code):
         # Уведомляем что пользователь отключился
+        safe_username = sanitize_username(self.scope["user"].username or self.scope["user"].email)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'user_leave',
-                'username': self.scope["user"].username,
+                'username': safe_username,
             }
         )
         
@@ -47,7 +51,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         """Получение сообщения от клиента"""
         data = json.loads(text_data)
-        message = data['message']
+        message = data.get('message', '')
+
+        # ✅ FIX: Sanitize message to prevent XSS
+        message = sanitize_message(message, max_length=5000)
+
+        # Skip empty messages
+        if not message:
+            return
 
         # Сохраняем сообщение в БД
         message_data = await self.save_message(message)

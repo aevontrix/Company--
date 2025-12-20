@@ -9,11 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/three": "^0.181.0",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.0.0",
+    "@types/dompurify": "^3.0.5",
+    "@types/three": "^0.181.0",
     "axios": "^1.13.2",
     "canvas-confetti": "^1.9.3",
+    "dompurify": "^3.3.1",
     "framer-motion": "^11.0.0",
     "gsap": "^3.12.5",
     "jwt-decode": "^4.0.0",

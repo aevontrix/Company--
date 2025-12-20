@@ -6,7 +6,9 @@ import { GamificationProvider } from '@/contexts/GamificationContext';
 import { WebSocketProvider } from '@/contexts/WebSocketContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import GlobalErrorToast from '@/components/GlobalErrorToast';
 import { AchievementNotificationProvider } from '@/components/ui/AchievementNotification';
+import OfflineBanner from '@/components/ui/OfflineBanner';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -193,7 +195,7 @@ const Sidebar = () => {
                   {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email}
                 </div>
                 <div className="text-xs text-secondary">
-                  Lvl {user.level || 1} • {user.title || 'Студент'}
+                  Lvl {user.level || 1} • Студент
                 </div>
               </div>
             </div>
@@ -365,6 +367,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <WebSocketProvider>
                 <AuthGuard>
                   <AchievementNotificationProvider>
+                  {/* ✅ Offline Status Banner */}
+                  <OfflineBanner />
+
                   {/* Background Effects */}
                   <div className="bg-noise" />
                   <div className="ambient-glow glow-1" />
@@ -405,6 +410,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       }
                     }
                   `}</style>
+
+                  {/* ✅ FIX: Global error toast for async errors */}
+                  <GlobalErrorToast />
                 </AchievementNotificationProvider>
               </AuthGuard>
               </WebSocketProvider>

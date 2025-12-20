@@ -26,24 +26,22 @@ class GamificationService:
         'friend_added': 25,
     }
 
-    # Level calculation: XP = 100 * level^2
+    # ✅ UNIFIED: Level calculation matches models.py - 2000 XP per level
     @staticmethod
     def calculate_level(xp: int) -> int:
-        """Calculate level based on total XP"""
-        if xp < 100:
-            return 1
-        return int(math.sqrt(xp / 100)) + 1
+        """Calculate level based on total XP - UNIFIED with models.py"""
+        return (xp // 2000) + 1
 
     @staticmethod
     def xp_for_next_level(current_level: int) -> int:
-        """Calculate XP needed for next level"""
-        return 100 * (current_level ** 2)
+        """Calculate XP needed for next level - UNIFIED: 2000 XP per level"""
+        return current_level * 2000
 
     @staticmethod
     def xp_progress_in_level(xp: int, level: int) -> dict:
-        """Get progress within current level"""
-        current_level_xp = 100 * ((level - 1) ** 2)
-        next_level_xp = 100 * (level ** 2)
+        """Get progress within current level - UNIFIED: 2000 XP per level"""
+        current_level_xp = (level - 1) * 2000
+        next_level_xp = level * 2000
         xp_in_level = xp - current_level_xp
         xp_needed = next_level_xp - current_level_xp
         return {

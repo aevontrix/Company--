@@ -32,7 +32,6 @@ export const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({
     <Particles
       id="tsparticles"
       className={`fixed inset-0 z-0 ${className}`}
-      init={particlesInit}
       options={{
         background: {
           color: {

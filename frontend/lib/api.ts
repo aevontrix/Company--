@@ -3,48 +3,23 @@
 // ============================================================
 
 import apiCache from './apiCache';
+// ✅ FIX: Use unified token management from utils/auth (removes duplication)
+import {
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+  clearTokens
+} from './utils/auth';
+
+// Re-export for backwards compatibility
+export { getAccessToken, getRefreshToken, setTokens, clearTokens };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 // ============================================================
-// TOKEN MANAGEMENT
-// ============================================================
-export const getAccessToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('access_token');
-  }
-  return null;
-};
-
-export const getRefreshToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('refresh_token');
-  }
-  return null;
-};
-
-export const setTokens = (access: string, refresh: string) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    document.cookie = `onthego_token=${access}; path=/; max-age=604800; SameSite=Lax`;
-    localStorage.setItem('onthego_session', 'true');
-  }
-};
-
-export const clearTokens = () => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    document.cookie = 'onthego_token=; path=/; max-age=0';
-    localStorage.removeItem('onthego_session');
-  }
-};
-
-// ============================================================
 // API REQUEST HELPER
 // ============================================================
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -731,6 +706,30 @@ export interface LeaderboardEntry {
   avatar?: string;
 }
 
+// ============================================================
+// ANALYTICS API
+// ============================================================
+export interface DailyActivity {
+  date: string;
+  time_spent: number;
+  lessons_completed: number;
+  quizzes_taken: number;
+  xp_earned: number;
+}
+
+export const analyticsAPI = {
+  getWeeklyActivity: async () => {
+    return apiCache.cached(
+      'analytics:weekly',
+      () => apiRequest<DailyActivity[]>('/api/analytics/daily-activity/week/'),
+      2 * 60 * 1000
+    );
+  },
+};
+
+// ============================================================
+// GAMIFICATION API
+// ============================================================
 export const gamificationAPI = {
   getStats: async () => {
     // Cache gamification stats for 1 minute
@@ -795,4 +794,8 @@ export default {
   messaging: messagingAPI,
   friends: friendsAPI,
   gamification: gamificationAPI,
+  analytics: analyticsAPI,
 };
+
+// Export apiCache for cache management
+export { apiCache };

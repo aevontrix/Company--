@@ -10,6 +10,22 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
+
+# ✅ FIX: Safe WebSocket send helper to handle Redis connection failures
+def safe_group_send(group_name: str, message: dict):
+    """
+    Safely send message to channel group.
+    Doesn't crash if Redis is unavailable.
+    """
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(group_name, message)
+            return True
+    except Exception as e:
+        print(f"⚠️ WebSocket send failed for {group_name}: {e}")
+    return False
+
 @receiver(post_save, sender=User)
 def user_created_xp(sender, instance, created, **kwargs):
     """Create gamification profile and award XP when user registers"""
@@ -31,8 +47,25 @@ def user_created_xp(sender, instance, created, **kwargs):
 @receiver(post_save, sender=LessonProgress)
 def lesson_completed_xp(sender, instance, created, **kwargs):
     """Award XP when lesson is completed and send real-time updates"""
+    # ✅ FIX: Skip if XP already awarded (prevent double XP)
+    if getattr(instance, '_xp_already_awarded', False):
+        return
+
+    # ✅ FIX: Only award XP for newly completed lessons
     if instance.status == 'completed' and instance.completed_at:
+        # Check if this lesson was JUST marked as completed (not already completed before)
+        # by checking if the completed_at was set in this save
+        if not hasattr(instance, '_just_completed'):
+            # Check by timestamp - if completed_at is within last 5 seconds, it's new
+            from datetime import timedelta
+            if instance.completed_at < timezone.now() - timedelta(seconds=5):
+                print(f"⏭️ SIGNAL SKIPPED: Lesson already completed earlier")
+                return
+
         user = instance.module_progress.enrollment.user
+        today = timezone.now().date()
+
+        print(f"🎯 SIGNAL: Lesson completed by {user.email}")
 
         # Get profile before XP award
         profile, _ = UserProfile.objects.get_or_create(user=user)
@@ -41,79 +74,95 @@ def lesson_completed_xp(sender, instance, created, **kwargs):
 
         # Award XP
         xp_gained = GamificationService.award_xp(user, 'complete_lesson')
+        print(f"💎 XP Awarded: {xp_gained} XP")
 
         # Refresh profile to get updated values
         profile.refresh_from_db()
 
-        # Send real-time WebSocket update
-        channel_layer = get_channel_layer()
+        # ✅ FIX: Update DailyActivity for real-time statistics
+        from apps.analytics.models import DailyActivity
+        daily_activity, _ = DailyActivity.objects.get_or_create(
+            user=user,
+            date=today,
+            defaults={
+                'time_spent': 0,
+                'lessons_completed': 0,
+                'quizzes_taken': 0,
+                'xp_earned': 0,
+            }
+        )
+        # Add time spent (convert from seconds to minutes)
+        daily_activity.time_spent += max(instance.time_spent // 60, 1)  # At least 1 minute
+        daily_activity.lessons_completed += 1
+        daily_activity.xp_earned += xp_gained
+        daily_activity.save()
+
+        # ✅ FIX: Update streak automatically when lesson is completed
+        profile.update_streak()
+
+        # ✅ FIX: Send real-time WebSocket updates with error handling
+        print(f"📡 Sending WebSocket to group: progress_{user.id}")
+
+        # Send streak update
+        safe_group_send(f'streak_{user.id}', {
+            'type': 'streak_updated',
+            'current_streak': profile.streak,
+            'longest_streak': profile.longest_streak,
+            'timestamp': timezone.now().isoformat(),
+        })
 
         # Send lesson completed notification
-        async_to_sync(channel_layer.group_send)(
-            f'progress_{user.id}',
-            {
-                'type': 'lesson_completed',
-                'lesson_id': str(instance.lesson.id) if hasattr(instance, 'lesson') else '',
-                'lesson_title': instance.lesson.title if hasattr(instance, 'lesson') else 'Lesson',
-                'xp_gained': xp_gained,
-                'total_xp': profile.xp,
-                'progress_percent': instance.module_progress.enrollment.progress_percentage if hasattr(instance, 'module_progress') else 0,
-                'timestamp': timezone.now().isoformat(),
-            }
-        )
+        safe_group_send(f'progress_{user.id}', {
+            'type': 'lesson_completed',
+            'lesson_id': str(instance.lesson.id) if hasattr(instance, 'lesson') else '',
+            'lesson_title': instance.lesson.title if hasattr(instance, 'lesson') else 'Lesson',
+            'xp_gained': xp_gained,
+            'total_xp': profile.xp,
+            'progress_percent': instance.module_progress.enrollment.progress_percentage if hasattr(instance, 'module_progress') else 0,
+            'timestamp': timezone.now().isoformat(),
+        })
+        print(f"✅ WebSocket sent: lesson_completed")
 
         # Send XP gained notification
-        async_to_sync(channel_layer.group_send)(
-            f'progress_{user.id}',
-            {
-                'type': 'xp_gained',
-                'amount': xp_gained,
-                'total_xp': profile.xp,
-                'level': profile.level,
-                'source': 'lesson',
-                'timestamp': timezone.now().isoformat(),
-            }
-        )
+        safe_group_send(f'progress_{user.id}', {
+            'type': 'xp_gained',
+            'amount': xp_gained,
+            'total_xp': profile.xp,
+            'level': profile.level,
+            'source': 'lesson',
+            'timestamp': timezone.now().isoformat(),
+        })
 
         # Check for level up
         if profile.level > old_level:
-            async_to_sync(channel_layer.group_send)(
-                f'progress_{user.id}',
-                {
-                    'type': 'level_up',
-                    'old_level': old_level,
-                    'new_level': profile.level,
-                    'total_xp': profile.xp,
-                    'xp_to_next_level': profile.level * 1000,
-                    'timestamp': timezone.now().isoformat(),
-                }
-            )
+            safe_group_send(f'progress_{user.id}', {
+                'type': 'level_up',
+                'old_level': old_level,
+                'new_level': profile.level,
+                'total_xp': profile.xp,
+                'xp_to_next_level': profile.level * 2000,
+                'timestamp': timezone.now().isoformat(),
+            })
 
         # Update dashboard
-        async_to_sync(channel_layer.group_send)(
-            f'dashboard_{user.id}',
-            {
-                'type': 'dashboard_update',
-                'data': {
-                    'xp': profile.xp,
-                    'level': profile.level,
-                    'streak': profile.streak,
-                }
-            }
-        )
-
-        # Update leaderboard (broadcast to all)
-        async_to_sync(channel_layer.group_send)(
-            'leaderboard_global',
-            {
-                'type': 'user_xp_updated',
-                'user_id': user.id,
-                'username': f"{user.first_name} {user.last_name}" if user.first_name else user.email,
+        safe_group_send(f'dashboard_{user.id}', {
+            'type': 'dashboard_update',
+            'data': {
                 'xp': profile.xp,
                 'level': profile.level,
-                'timestamp': timezone.now().isoformat(),
+                'streak': profile.streak,
             }
-        )
+        })
+
+        # Update leaderboard (broadcast to all)
+        safe_group_send('leaderboard_global', {
+            'type': 'user_xp_updated',
+            'user_id': user.id,
+            'username': f"{user.first_name} {user.last_name}" if user.first_name else user.email,
+            'xp': profile.xp,
+            'level': profile.level,
+            'timestamp': timezone.now().isoformat(),
+        })
 
 @receiver(post_save, sender=CourseEnrollment)
 def course_completed_xp(sender, instance, created, **kwargs):
@@ -154,10 +203,14 @@ def check_achievements(sender, instance, created, **kwargs):
     if created:
         return  # Пропустить при создании профиля
 
+    # ✅ FIX: Prevent infinite loop - check if we're already unlocking achievements
+    if getattr(instance, '_unlocking_achievements', False):
+        return
+
     from .models import Achievement
 
     user = instance.user
-    channel_layer = get_channel_layer()
+    # ✅ FIX: channel_layer now handled by safe_group_send
 
     # Список достижений для разблокировки
     achievements_to_unlock = []
@@ -238,42 +291,54 @@ def check_achievements(sender, instance, created, **kwargs):
         })
 
     # ✅ РАЗБЛОКИРОВАТЬ ДОСТИЖЕНИЯ
-    for achievement_data in achievements_to_unlock:
-        # Создать achievement
-        achievement = Achievement.objects.create(
-            user=user,
-            **achievement_data
-        )
+    if achievements_to_unlock:
+        # ✅ FIX: Set flag to prevent infinite loop
+        instance._unlocking_achievements = True
+        try:
+            for achievement_data in achievements_to_unlock:
+                # Создать achievement
+                achievement = Achievement.objects.create(
+                    user=user,
+                    **achievement_data
+                )
 
-        # Начислить XP за достижение
-        if achievement_data['xp_reward'] > 0:
-            instance.xp += achievement_data['xp_reward']
-            instance.save(update_fields=['xp'])
+                # Начислить XP за достижение
+                if achievement_data['xp_reward'] > 0:
+                    instance.xp += achievement_data['xp_reward']
+                    instance.save(update_fields=['xp'])
 
-        # Отправить WebSocket уведомление
-        async_to_sync(channel_layer.group_send)(
-            f'achievements_{user.id}',
-            {
-                'type': 'achievement_unlocked',
-                'achievement_id': str(achievement.id),
-                'name': achievement.title,
-                'description': achievement.description,
-                'icon': achievement.icon,
-                'rarity': achievement.category,
-                'xp_reward': achievement.xp_reward,
-                'timestamp': timezone.now().isoformat(),
-            }
-        )
+                    # ✅ FIX: Update DailyActivity with achievement XP
+                    from apps.analytics.models import DailyActivity
+                    today = timezone.now().date()
+                    daily_activity, _ = DailyActivity.objects.get_or_create(
+                        user=user,
+                        date=today,
+                        defaults={'time_spent': 0, 'lessons_completed': 0, 'quizzes_taken': 0, 'xp_earned': 0}
+                    )
+                    daily_activity.xp_earned += achievement_data['xp_reward']
+                    daily_activity.save(update_fields=['xp_earned'])
 
-        # Также отправить в progress consumer
-        async_to_sync(channel_layer.group_send)(
-            f'progress_{user.id}',
-            {
-                'type': 'achievement_unlocked',
-                'achievement_id': str(achievement.id),
-                'name': achievement.title,
-                'description': achievement.description,
-                'icon': achievement.icon,
-                'timestamp': timezone.now().isoformat(),
-            }
-        )
+                # ✅ FIX: Send WebSocket notification with error handling
+                safe_group_send(f'achievements_{user.id}', {
+                    'type': 'achievement_unlocked',
+                    'achievement_id': str(achievement.id),
+                    'name': achievement.title,
+                    'description': achievement.description,
+                    'icon': achievement.icon,
+                    'rarity': achievement.category,
+                    'xp_reward': achievement.xp_reward,
+                    'timestamp': timezone.now().isoformat(),
+                })
+
+                # Also send to progress consumer
+                safe_group_send(f'progress_{user.id}', {
+                    'type': 'achievement_unlocked',
+                    'achievement_id': str(achievement.id),
+                    'name': achievement.title,
+                    'description': achievement.description,
+                    'icon': achievement.icon,
+                    'timestamp': timezone.now().isoformat(),
+                })
+        finally:
+            # ✅ FIX: Always clear flag, even if error occurs
+            instance._unlocking_achievements = False

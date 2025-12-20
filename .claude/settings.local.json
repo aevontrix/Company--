@@ -22,7 +22,20 @@
       "Bash(pip install channels channels-redis daphne)",
       "Bash(ls:*)",
       "Bash(test:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(python.exe manage.py shell:*)",
+      "Bash(grep:*)",
+      "Bash(where:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 90 npm run build)",
+      "Bash(tasklist:*)",
+      "Bash(venvScriptspip.exe install whitenoise)",
+      "Bash(./venv/Scripts/pip.exe install:*)",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(set DJANGO_SETTINGS_MODULE=onthego.settings:*)",
+      "Bash(timeout 10 venv/Scripts/daphne.exe:*)",
+      "Bash(timeout 15 npm run dev:*)",
+      "Bash(venvScriptspython.exe manage.py check)"
     ],
     "deny": [],
     "ask": []

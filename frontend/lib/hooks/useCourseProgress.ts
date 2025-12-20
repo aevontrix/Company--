@@ -74,11 +74,13 @@ export const useCourseProgress = (courseSlug?: string) => {
   useEffect(() => {
     loadProgress();
 
-    // Connect to WebSocket for real-time updates
-    const ws = connectProgress(handleProgressUpdate);
+    // ✅ FIX: Connect to WebSocket (async, use wsService for cleanup)
+    connectProgress(handleProgressUpdate);
 
     return () => {
-      ws?.close();
+      // Use wsService.disconnect instead of ws.close() for proper cleanup
+      const wsService = require('../websocket').wsService;
+      wsService.disconnect('progress');
     };
   }, [loadProgress, handleProgressUpdate]);
 

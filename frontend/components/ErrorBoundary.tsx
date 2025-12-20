@@ -244,4 +244,68 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
+/**
+ * Hook for error handling in functional components
+ */
+export function useErrorHandler() {
+  const [error, setError] = React.useState<Error | null>(null);
+
+  const handleError = React.useCallback((error: Error) => {
+    console.error('Error caught:', error);
+    setError(error);
+  }, []);
+
+  const clearError = React.useCallback(() => {
+    setError(null);
+  }, []);
+
+  const withErrorHandling = React.useCallback(
+    <T extends (...args: any[]) => Promise<any>>(fn: T) => {
+      return async (...args: Parameters<T>): Promise<ReturnType<T> | undefined> => {
+        try {
+          return await fn(...args);
+        } catch (err) {
+          handleError(err instanceof Error ? err : new Error(String(err)));
+          return undefined;
+        }
+      };
+    },
+    [handleError]
+  );
+
+  return { error, handleError, clearError, withErrorHandling };
+}
+
+/**
+ * Async error boundary wrapper with Suspense support
+ */
+export function AsyncBoundary({
+  children,
+  fallback,
+  loadingFallback,
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  loadingFallback?: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary fallback={fallback}>
+      <React.Suspense
+        fallback={
+          loadingFallback || (
+            <div className="flex items-center justify-center p-8">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin" />
+                <span className="text-sm text-text-muted">Загрузка...</span>
+              </div>
+            </div>
+          )
+        }
+      >
+        {children}
+      </React.Suspense>
+    </ErrorBoundary>
+  );
+}
+
 export default ErrorBoundary;

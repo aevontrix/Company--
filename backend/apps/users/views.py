@@ -5,13 +5,15 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str, force_bytes
 from django.conf import settings
 from onthego.pagination import StandardResultsSetPagination, SmallResultsSetPagination
+from onthego.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetRateThrottle
+from apps.notifications.services import EmailService
 from .models import UserSettings, Friendship
 from .serializers import (
     UserSerializer,
@@ -24,14 +26,27 @@ from .serializers import (
 User = get_user_model()
 
 
+class ThrottledLoginView(TokenObtainPairView):
+    """
+    Login with rate limiting.
+    POST /api/users/login/
+
+    ✅ FIX: Added rate limiting to prevent brute force attacks
+    """
+    throttle_classes = [LoginRateThrottle]
+
+
 class RegisterView(generics.CreateAPIView):
     """
     Регистрация нового пользователя
     POST /api/users/register/
+
+    ✅ FIX: Added rate limiting to prevent mass account creation
     """
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterRateThrottle]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -55,53 +70,93 @@ class LogoutView(APIView):
     """
     Выход пользователя (JWT blacklist)
     POST /api/users/logout/
+
+    ✅ FIX: Added proper logging and token validation
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        try:
-            refresh_token = request.data.get('refresh')
-            if refresh_token:
+        refresh_token = request.data.get('refresh')
+        token_blacklisted = False
+
+        if refresh_token:
+            try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
-            return Response({
-                'message': 'Успешный выход'
-            }, status=status.HTTP_200_OK)
-        except TokenError:
-            return Response({
-                'message': 'Успешный выход'
-            }, status=status.HTTP_200_OK)
-        except Exception:
-            return Response({
-                'message': 'Успешный выход'
-            }, status=status.HTTP_200_OK)
+                token_blacklisted = True
+                print(f"✅ Token blacklisted for user logout")
+            except TokenError as e:
+                # Token already expired or invalid - still consider logout successful
+                print(f"⚠️ Token error during logout: {e}")
+            except Exception as e:
+                # Log unexpected errors but don't fail logout
+                print(f"⚠️ Unexpected error during logout: {e}")
+        else:
+            print("⚠️ Logout called without refresh token")
+
+        return Response({
+            'message': 'Успешный выход',
+            'token_blacklisted': token_blacklisted
+        }, status=status.HTTP_200_OK)
 
 
 class PasswordResetView(APIView):
     """
     Сброс пароля пользователя
     POST /api/users/password/reset/
+
+    ✅ FIX: Now generates real password reset token
+    ✅ FIX: Added rate limiting to prevent abuse
     """
     permission_classes = [AllowAny]
-    
+    throttle_classes = [PasswordResetRateThrottle]
+
     def post(self, request):
         email = request.data.get('email')
         if not email:
             return Response(
-                {'error': 'Email обязателен'}, 
+                {'error': 'Email обязателен'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         try:
             user = User.objects.get(email=email)
-            # Здесь должна быть логика отправки email с токеном
-            # Для примера просто возвращаем успех
-            return Response({
-                'message': 'Инструкции по сбросу пароля отправлены на email'
-            }, status=status.HTTP_200_OK)
+
+            # ✅ FIX: Generate real password reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+            # Build reset URL (frontend will handle this)
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+            reset_url = f"{frontend_url}/reset-password?uid={uid}&token={token}"
+
+            # ✅ FIX: Use EmailService for better email handling
+            try:
+                email_sent = EmailService.send_password_reset_email(user, reset_url)
+            except Exception as e:
+                print(f"[EMAIL] Password reset email failed: {e}")
+                email_sent = False
+
+            # Return success with token info (for development/testing)
+            response_data = {
+                'message': 'Инструкции по сбросу пароля отправлены на email',
+                'email_sent': email_sent,
+            }
+
+            # ✅ In development, include token for testing
+            if settings.DEBUG:
+                response_data['debug_info'] = {
+                    'uid': uid,
+                    'token': token,
+                    'reset_url': reset_url,
+                }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
         except User.DoesNotExist:
+            # ✅ FIX: Typo fixed "Пользоват" -> "Пользователь"
             return Response({
-                'error': 'Пользоват таким email не найден'
+                'error': 'Пользователь с таким email не найден'
             }, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -109,32 +164,46 @@ class PasswordResetConfirmView(APIView):
     """
     Подтверждение сброса пароля
     POST /api/users/password/reset/confirm/
+
+    ✅ FIX: Added password validation
     """
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         uid = request.data.get('uid')
         token = request.data.get('token')
         new_password = request.data.get('new_password')
-        
+
         if not all([uid, token, new_password]):
             return Response({
                 'error': 'Все поля обязательны'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # ✅ FIX: Validate password strength
+        if len(new_password) < 8:
+            return Response({
+                'error': 'Пароль должен содержать минимум 8 символов'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=user_id)
-            
+
             if default_token_generator.check_token(user, token):
                 user.set_password(new_password)
                 user.save()
+
+                # ✅ FIX: Invalidate all existing tokens by updating last_login
+                from django.utils import timezone
+                user.last_login = timezone.now()
+                user.save(update_fields=['last_login'])
+
                 return Response({
                     'message': 'Пароль успешно изменен'
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({
-                    'error': 'Неверный токен'
+                    'error': 'Неверный или истёкший токен'
                 }, status=status.HTTP_400_BAD_REQUEST)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response({
@@ -471,6 +540,9 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def send_request(self, request):
         """Отправить запрос на дружбу"""
+        from django.db import transaction
+        from django.db.models import Q
+
         user = request.user
         to_user_id = request.data.get('user_id')
 
@@ -485,25 +557,27 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         if user.id == to_user.id:
             return Response({'error': 'Cannot send friend request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if friendship already exists
-        from django.db.models import Q
-        existing = Friendship.objects.filter(
-            (Q(from_user=user, to_user=to_user) |
-             Q(from_user=to_user, to_user=user))
-        ).first()
+        # ✅ FIX: Use atomic transaction to prevent race condition
+        with transaction.atomic():
+            # Check if friendship already exists with row locking
+            existing = Friendship.objects.select_for_update().filter(
+                (Q(from_user=user, to_user=to_user) |
+                 Q(from_user=to_user, to_user=user))
+            ).first()
 
-        if existing:
-            if existing.status == 'accepted':
-                return Response({'error': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
-            elif existing.status == 'pending':
-                return Response({'error': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
+            if existing:
+                if existing.status == 'accepted':
+                    return Response({'error': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
+                elif existing.status == 'pending':
+                    return Response({'error': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create new friendship
-        friendship = Friendship.objects.create(
-            from_user=user,
-            to_user=to_user,
-            status='pending'
-        )
+            # Create new friendship
+            friendship = Friendship.objects.create(
+                from_user=user,
+                to_user=to_user,
+                status='pending'
+            )
+
         serializer = self.get_serializer(friendship)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

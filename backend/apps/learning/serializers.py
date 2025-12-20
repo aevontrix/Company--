@@ -20,13 +20,17 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     )
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
     progress_percentage = serializers.SerializerMethodField()
-    
+    lessons_completed = serializers.SerializerMethodField()
+    total_time_spent = serializers.SerializerMethodField()
+    average_score = serializers.SerializerMethodField()
+
     class Meta:
         model = CourseEnrollment
         fields = ['id', 'user', 'user_name', 'course', 'course_id', 'status',
-                  'enrolled_at', 'completed_at', 'progress_percentage']
+                  'enrolled_at', 'completed_at', 'progress_percentage',
+                  'lessons_completed', 'total_time_spent', 'average_score']
         read_only_fields = ['id', 'user', 'enrolled_at', 'completed_at']
-    
+
     def get_progress_percentage(self, obj):
         total = obj.course.modules.count()
         if total == 0:
@@ -37,7 +41,34 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
             moduleprogress__is_completed=True
         ).count()
         return (completed / total) * 100
-    
+
+    def get_lessons_completed(self, obj):
+        """Get count of completed lessons for this enrollment"""
+        return LessonProgress.objects.filter(
+            module_progress__enrollment=obj,
+            status='completed'
+        ).count()
+
+    def get_total_time_spent(self, obj):
+        """Get total time spent on this course in seconds"""
+        from django.db.models import Sum
+        result = LessonProgress.objects.filter(
+            module_progress__enrollment=obj
+        ).aggregate(total=Sum('time_spent'))
+        return result['total'] or 0
+
+    def get_average_score(self, obj):
+        """Get average score from quiz attempts"""
+        from apps.learning.models import QuizAttempt
+        from django.db.models import Avg
+
+        # Get average score from quiz attempts for this enrollment
+        result = QuizAttempt.objects.filter(
+            lesson_progress__module_progress__enrollment=obj,
+            passed=True
+        ).aggregate(avg=Avg('score'))
+        return round(result['avg']) if result['avg'] else 0
+
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)

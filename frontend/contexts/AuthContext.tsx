@@ -70,21 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     previousBadgesRef.current = currentBadgeIds;
   }, [user]);
 
-  // Auto-refresh user data every 5 seconds (for XP updates)
-  useEffect(() => {
-    if (!user) return;
-
-    const intervalId = setInterval(async () => {
-      try {
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error('Failed to auto-refresh user:', error);
-      }
-    }, 5000); // 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, [user]);
+  // ✅ FIX: Removed polling - XP updates now come via WebSocket
+  // User data is refreshed by WebSocketContext when real-time updates are received
 
   // Check if user is authenticated on mount
   useEffect(() => {

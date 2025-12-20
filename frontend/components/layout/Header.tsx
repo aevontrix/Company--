@@ -31,18 +31,24 @@ export default function Header() {
             : 'py-6 bg-transparent'
         }`}
       >
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <nav
+          className="container mx-auto px-4 sm:px-6 lg:px-8"
+          role="navigation"
+          aria-label="Главная навигация"
+        >
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
               className="relative text-2xl font-black tracking-tight text-white hover:scale-105 transition-transform font-display"
               style={{ fontFamily: 'var(--font-display), sans-serif', letterSpacing: '-1px' }}
+              aria-label="ONTHEGO - На главную страницу"
             >
               ONTHEGO
               <span
                 className="absolute -right-1.5 top-0 w-1.5 h-1.5 bg-neon-pink rounded-full"
                 style={{ boxShadow: '0 0 10px #FF4DFF' }}
+                aria-hidden="true"
               />
             </Link>
 
@@ -85,22 +91,25 @@ export default function Header() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4" role="group" aria-label="Действия пользователя">
               {isAuthenticated ? (
                 <>
-                  <span className="text-text-secondary hidden sm:inline text-sm">{user?.first_name}</span>
+                  <span className="text-text-secondary hidden sm:inline text-sm" aria-hidden="true">
+                    {user?.first_name}
+                  </span>
                   <Button
                     onClick={logout}
                     variant="outline"
                     size="sm"
                     style={{ borderRadius: '100px' }}
+                    aria-label="Выйти из аккаунта"
                   >
                     Выход
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link href="/login">
+                  <Link href="/login" aria-label="Войти в аккаунт">
                     <Button
                       variant="outline"
                       size="sm"
@@ -109,7 +118,7 @@ export default function Header() {
                       Войти
                     </Button>
                   </Link>
-                  <Link href="/register">
+                  <Link href="/register" aria-label="Создать новый аккаунт">
                     <Button
                       variant="primary"
                       size="sm"

@@ -229,21 +229,68 @@ class LessonProgressViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = LessonProgressSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['module_progress', 'status']
-    
+    filterset_fields = ['module_progress', 'status', 'lesson']  # ✅ FIX: Add lesson filter
+
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return LessonProgress.objects.none()
         return LessonProgress.objects.filter(
             module_progress__enrollment__user=self.request.user
         ).select_related('lesson', 'module_progress')
+
+    def list(self, request, *args, **kwargs):
+        """✅ FIX: Auto-create lesson progress if filtering by lesson and doesn't exist"""
+        lesson_id = request.query_params.get('lesson')
+        if lesson_id:
+            try:
+                from apps.courses.models import Lesson
+                from apps.learning.models import CourseEnrollment, ModuleProgress
+                from django.db import transaction
+
+                lesson = Lesson.objects.get(id=lesson_id)
+
+                # ✅ FIX: Use atomic transaction to prevent race conditions
+                with transaction.atomic():
+                    # Get or create enrollment for this lesson's course
+                    enrollment, _ = CourseEnrollment.objects.get_or_create(
+                        user=request.user,
+                        course=lesson.module.course,
+                        defaults={'status': 'active'}
+                    )
+
+                    # Get or create module progress
+                    module_progress, _ = ModuleProgress.objects.get_or_create(
+                        enrollment=enrollment,
+                        module=lesson.module,
+                        defaults={'progress_percentage': 0}
+                    )
+
+                    # Get or create lesson progress
+                    lesson_progress, created = LessonProgress.objects.get_or_create(
+                        module_progress=module_progress,
+                        lesson=lesson,
+                        defaults={'status': 'in_progress', 'progress_percentage': 0}
+                    )
+
+                    if created:
+                        print(f"✅ Auto-created lesson progress for user {request.user.email}, lesson {lesson.title}")
+
+            except Exception as e:
+                print(f"⚠️ Error auto-creating lesson progress: {e}")
+
+        return super().list(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'])
     def mark_completed(self, request, pk=None):
         """Отметить урок как завершённый (XP начисляется через signal)"""
         from django.utils import timezone
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
 
         lesson_progress = self.get_object()
+        user = lesson_progress.module_progress.enrollment.user
+
+        print(f"🔔 MARK_COMPLETED called: User {user.email}, Lesson {lesson_progress.lesson.title}")
 
         # Only mark completed if not already completed
         was_already_completed = lesson_progress.status == 'completed'
@@ -251,6 +298,7 @@ class LessonProgressViewSet(viewsets.ModelViewSet):
         if not was_already_completed:
             lesson_progress.status = 'completed'
             lesson_progress.completed_at = timezone.now()
+            lesson_progress._just_completed = True  # ✅ Flag for signal to know this is a new completion
             lesson_progress.save()
 
             # ✅ XP will be awarded by signal automatically (gamification/signals.py:lesson_completed_xp)
@@ -258,11 +306,32 @@ class LessonProgressViewSet(viewsets.ModelViewSet):
 
             # Update course progress percentage
             enrollment = lesson_progress.module_progress.enrollment
-            self._update_course_progress(enrollment)
+            progress_percentage = self._update_course_progress(enrollment)
 
             # Get XP amount for response (but don't award it here, signal does it)
             from apps.gamification.services import GamificationService
             xp_amount = GamificationService.XP_REWARDS.get('complete_lesson', 50)
+
+            # ✅ FIX: Send WebSocket notification for progress update
+            channel_layer = get_channel_layer()
+            user = lesson_progress.module_progress.enrollment.user
+            user_group = f'progress_{user.id}'
+
+            try:
+                async_to_sync(channel_layer.group_send)(
+                    user_group,
+                    {
+                        'type': 'lesson_completed',
+                        'lesson_id': lesson_progress.lesson.id,
+                        'lesson_title': lesson_progress.lesson.title,
+                        'xp_gained': xp_amount,
+                        'total_xp': request.user.gamification_profile.xp if hasattr(request.user, 'gamification_profile') else 0,
+                        'progress_percent': progress_percentage,
+                        'timestamp': timezone.now().isoformat()
+                    }
+                )
+            except Exception as e:
+                print(f'Failed to send WebSocket notification: {e}')
         else:
             xp_amount = 0
 

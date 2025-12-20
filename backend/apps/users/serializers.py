@@ -1,9 +1,87 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from .models import UserSettings, UserDevice, Friendship, UserProfile
+import os
 
 User = get_user_model()
+
+
+# ✅ Avatar upload validation constants
+AVATAR_MAX_SIZE_MB = 5
+AVATAR_MAX_SIZE_BYTES = AVATAR_MAX_SIZE_MB * 1024 * 1024  # 5MB
+AVATAR_ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+AVATAR_ALLOWED_CONTENT_TYPES = [
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif'
+]
+AVATAR_MAX_DIMENSIONS = (2000, 2000)  # Max width x height
+
+
+def validate_avatar(file):
+    """
+    Validate avatar upload:
+    - File size (max 5MB)
+    - File extension (jpg, png, webp, gif)
+    - Content type verification
+    - Image dimensions (max 2000x2000)
+    """
+    if not file:
+        return file
+
+    # Check file size
+    if file.size > AVATAR_MAX_SIZE_BYTES:
+        raise serializers.ValidationError(
+            f"Размер файла не должен превышать {AVATAR_MAX_SIZE_MB}MB. "
+            f"Текущий размер: {file.size / (1024 * 1024):.1f}MB"
+        )
+
+    # Check file extension
+    ext = os.path.splitext(file.name)[1].lower().lstrip('.')
+    if ext not in AVATAR_ALLOWED_EXTENSIONS:
+        raise serializers.ValidationError(
+            f"Недопустимый формат файла. Разрешены: {', '.join(AVATAR_ALLOWED_EXTENSIONS)}"
+        )
+
+    # Check content type
+    content_type = getattr(file, 'content_type', None)
+    if content_type and content_type not in AVATAR_ALLOWED_CONTENT_TYPES:
+        raise serializers.ValidationError(
+            f"Недопустимый тип файла: {content_type}. "
+            f"Разрешены только изображения."
+        )
+
+    # Validate actual image content and dimensions
+    try:
+        from PIL import Image
+
+        # Reset file pointer
+        file.seek(0)
+        img = Image.open(file)
+        img.verify()  # Verify it's a valid image
+
+        # Re-open to get dimensions (verify closes the file)
+        file.seek(0)
+        img = Image.open(file)
+        width, height = img.size
+
+        if width > AVATAR_MAX_DIMENSIONS[0] or height > AVATAR_MAX_DIMENSIONS[1]:
+            raise serializers.ValidationError(
+                f"Размер изображения слишком большой ({width}x{height}). "
+                f"Максимум: {AVATAR_MAX_DIMENSIONS[0]}x{AVATAR_MAX_DIMENSIONS[1]} пикселей."
+            )
+
+        # Reset file pointer for saving
+        file.seek(0)
+
+    except serializers.ValidationError:
+        raise
+    except Exception as e:
+        raise serializers.ValidationError(
+            f"Не удалось обработать изображение. Убедитесь, что файл является корректным изображением."
+        )
+
+    return file
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -211,12 +289,27 @@ class UpdatePasswordSerializer(serializers.Serializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for profile updates"""
-    
+
+    # ✅ Avatar field with custom validation
+    avatar = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        validators=[validate_avatar],
+        help_text=f"Аватар пользователя. Макс. размер: {AVATAR_MAX_SIZE_MB}MB. "
+                  f"Форматы: {', '.join(AVATAR_ALLOWED_EXTENSIONS)}"
+    )
+
     class Meta:
         model = User
         fields = [
             'first_name', 'last_name', 'avatar', 'phone'
         ]
+
+    def validate_avatar(self, value):
+        """Additional avatar validation at field level"""
+        if value:
+            return validate_avatar(value)
+        return value
 
 
 class UserLoginSerializer(serializers.Serializer):

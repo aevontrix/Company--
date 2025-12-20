@@ -41,7 +41,7 @@ export default function UserProgress({ variant = 'full', className = '' }: UserP
         setLoading(true);
 
         // Load enrollments to calculate stats
-        const enrollmentsResponse = await learningAPI.getEnrollments();
+        const enrollmentsResponse: any = await learningAPI.getEnrollments();
 
         // ✅ Fix: Handle paginated response correctly
         const enrollments = Array.isArray(enrollmentsResponse?.results)
@@ -105,27 +105,22 @@ export default function UserProgress({ variant = 'full', className = '' }: UserP
         loadStats();
       }
       if (data.type === 'lesson_completed') {
-        // Increment lessons completed immediately
-        setStats((prev) => ({
-          ...prev,
-          total_lessons_completed: prev.total_lessons_completed + 1,
-        }));
-        // Then reload full stats
-        setTimeout(() => loadStats(), 1000);
+        // ✅ FIX: Clear enrollments cache and reload stats immediately
+        // Import apiCache dynamically to avoid circular dependencies
+        import('@/lib/api').then(({ apiCache }) => {
+          apiCache.clear('learning:enrollments');
+          loadStats();
+        });
       }
     };
 
-    // Connect to progress WebSocket (only if user exists)
-    let ws: WebSocket | null = null;
+    // ✅ FIX: Connect to progress WebSocket (async, cleanup always)
     if (user) {
-      ws = connectProgress(handleProgressUpdate);
+      connectProgress(handleProgressUpdate);
     }
 
     return () => {
-      // Cleanup WebSocket connection
-      if (ws) {
-        wsService.disconnect('progress');
-      }
+      wsService.disconnect('progress');
     };
   }, [user]);
 

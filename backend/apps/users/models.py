@@ -71,10 +71,10 @@ class UserSettings(models.Model):
     push_notifications = models.BooleanField(default=True, verbose_name='Push уведомления')
     
     # Статистика
+    # ✅ FIX: streak fields moved to apps.gamification.UserProfile to avoid duplication
     total_courses_completed = models.IntegerField(default=0, verbose_name='Курсов завершено')
     total_learning_time = models.IntegerField(default=0, verbose_name='Время обучения (минуты)')
-    current_streak = models.IntegerField(default=0, verbose_name='Текущая серия (дни)')
-    longest_streak = models.IntegerField(default=0, verbose_name='Лучшая серия (дни)')
+    # current_streak и longest_streak теперь только в gamification.UserProfile
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,13 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { lessonsAPI, learningAPI } from '@/lib/api';
+import DOMPurify from 'dompurify';
+import { lessonsAPI, learningAPI, coursesAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLessonTimeTracking, formatTime } from '@/lib/hooks/useLessonTimeTracking';
 import { useToastStore } from '@/lib/store/toastStore';
 import { ArrowLeft, ArrowRight, Play, Pause, Maximize, Check, X, Clock, CheckCircle, Award, Star } from 'lucide-react';
+
+// ✅ FIX: Sanitize HTML content to prevent XSS attacks
+const sanitizeHTML = (html: string): string => {
+  if (typeof window === 'undefined') return html;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'img', 'span', 'div'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+  });
+};
 
 interface QuizOption {
   id: string;
@@ -300,7 +311,18 @@ const VideoPlayer = ({ lesson, onComplete }: { lesson: LessonData; onComplete?: 
   );
 };
 
-// Quiz Component
+// ✅ Quiz state persistence key
+const getQuizStorageKey = (lessonId: string) => `onthego_quiz_${lessonId}`;
+
+interface QuizState {
+  currentQuestionIndex: number;
+  score: number;
+  timeElapsed: number; // in seconds
+  startedAt: number;
+  answers: Record<number, string>; // questionIndex -> selectedAnswer
+}
+
+// Quiz Component with Timer Persistence
 const QuizInterface = ({ lesson, onComplete }: { lesson: LessonData; onComplete: () => void }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -308,8 +330,106 @@ const QuizInterface = ({ lesson, onComplete }: { lesson: LessonData; onComplete:
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
 
+  // ✅ Timer state
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const questions = lesson.quizQuestions || [];
+  const storageKey = getQuizStorageKey(lesson.id);
+
+  // ✅ Load saved quiz state on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const state: QuizState = JSON.parse(saved);
+        // Calculate time elapsed since last save
+        const additionalTime = Math.floor((Date.now() - state.startedAt) / 1000);
+        setTimeElapsed(state.timeElapsed);
+        setCurrentQuestionIndex(state.currentQuestionIndex);
+        setScore(state.score);
+        // Note: We don't restore answers to allow re-answering
+      } catch (e) {
+        console.error('Failed to restore quiz state:', e);
+      }
+    }
+  }, [storageKey]);
+
+  // ✅ Timer effect
+  useEffect(() => {
+    if (completed || !isTimerRunning) return;
+
+    timerRef.current = setInterval(() => {
+      setTimeElapsed((prev) => prev + 1);
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [completed, isTimerRunning]);
+
+  // ✅ Save state periodically and on navigation
+  useEffect(() => {
+    const saveState = () => {
+      if (completed) return;
+
+      const state: QuizState = {
+        currentQuestionIndex,
+        score,
+        timeElapsed,
+        startedAt: Date.now(),
+        answers: {},
+      };
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+
+    // Save every 5 seconds
+    const saveInterval = setInterval(saveState, 5000);
+
+    // Save on beforeunload
+    const handleBeforeUnload = () => {
+      saveState();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearInterval(saveInterval);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [storageKey, currentQuestionIndex, score, timeElapsed, completed]);
+
+  // ✅ Clear saved state when quiz is completed
+  useEffect(() => {
+    if (completed) {
+      localStorage.removeItem(storageKey);
+    }
+  }, [completed, storageKey]);
+
+  // ✅ Format time helper
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
   const currentQuestion = questions[currentQuestionIndex];
+
+  // ✅ FIX: Show error if no quiz questions are available
+  if (questions.length === 0) {
+    return (
+      <div className="cyber-card p-12 text-center">
+        <div className="text-8xl mb-6">⚠️</div>
+        <h2 className="text-3xl font-bold mb-4">Тест не настроен</h2>
+        <p className="text-text-secondary mb-8">
+          К сожалению, для этого урока ещё не добавлены вопросы теста.
+          <br />
+          Пожалуйста, свяжитесь с администратором курса.
+        </p>
+      </div>
+    );
+  }
 
   const handleAnswerSelect = (optionId: string) => {
     if (showExplanation) return;
@@ -317,7 +437,7 @@ const QuizInterface = ({ lesson, onComplete }: { lesson: LessonData; onComplete:
   };
 
   const handleSubmit = () => {
-    if (!selectedAnswer) return;
+    if (!selectedAnswer || !currentQuestion) return;
     const isCorrect = currentQuestion.options.find((o) => o.id === selectedAnswer)?.isCorrect;
     if (isCorrect) setScore(score + 1);
     setShowExplanation(true);
@@ -330,16 +450,25 @@ const QuizInterface = ({ lesson, onComplete }: { lesson: LessonData; onComplete:
       setShowExplanation(false);
     } else {
       setCompleted(true);
-      onComplete();
+      // ✅ FIX: Only call onComplete if passing score (>=70%)
+      if (currentQuestion && selectedAnswer) {
+        const finalScore = score + (currentQuestion.options.find((o) => o.id === selectedAnswer)?.isCorrect ? 1 : 0);
+        const percentage = Math.round((finalScore / questions.length) * 100);
+        if (percentage >= 70) {
+          onComplete();
+        }
+      }
     }
   };
 
   if (completed) {
     const percentage = Math.round((score / questions.length) * 100);
+    const passed = percentage >= 70;
+
     return (
       <div className="cyber-card p-12 text-center">
         <div className="text-8xl mb-6">
-          {percentage >= 80 ? '🏆' : percentage >= 60 ? '🎯' : '📚'}
+          {passed ? (percentage >= 80 ? '🏆' : '🎯') : '📚'}
         </div>
         <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Тест завершён!
@@ -347,24 +476,53 @@ const QuizInterface = ({ lesson, onComplete }: { lesson: LessonData; onComplete:
         <div className="text-2xl mb-3">
           Результат: {score} / {questions.length} ({percentage}%)
         </div>
-        <div className={`text-lg mb-8 ${percentage >= 80 ? 'text-green-400' : percentage >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-          {percentage >= 80 && '🌟 Отличная работа! Вы освоили материал!'}
-          {percentage >= 60 && percentage < 80 && '👍 Хорошо! Продолжайте практиковаться!'}
-          {percentage < 60 && '📖 Повторите материал и попробуйте ещё раз!'}
+        {/* ✅ Show time taken */}
+        <div className="text-sm text-text-secondary mb-4 flex items-center justify-center gap-2">
+          <Clock size={14} />
+          Время: {formatTime(timeElapsed)}
         </div>
-        <div className="inline-block px-6 py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-semibold">
-          +{lesson.xpReward} XP получено!
+        <div className={`text-lg mb-8 ${passed ? 'text-green-400' : 'text-red-400'}`}>
+          {passed ? '✅ Поздравляем! Вы успешно прошли тест!' : '❌ Недостаточно правильных ответов. Попробуйте ещё раз!'}
+          <div className="text-sm mt-2 text-text-secondary">
+            {passed ? 'Минимум для прохождения: 70%' : 'Для прохождения нужно минимум 70% правильных ответов'}
+          </div>
         </div>
+        {passed ? (
+          <div className="inline-block px-6 py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-semibold">
+            +{lesson.xpReward} XP получено!
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setCompleted(false);
+              setCurrentQuestionIndex(0);
+              setScore(0);
+              setSelectedAnswer(null);
+              setShowExplanation(false);
+            }}
+            className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:shadow-lg transition-all"
+          >
+            🔄 Попробовать снова
+          </button>
+        )}
       </div>
     );
   }
 
   return (
     <div className="cyber-card p-8">
-      {/* Progress */}
+      {/* Progress & Timer */}
       <div className="mb-8">
-        <div className="text-sm text-text-secondary mb-2">
-          Вопрос {currentQuestionIndex + 1} из {questions.length}
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm text-text-secondary">
+            Вопрос {currentQuestionIndex + 1} из {questions.length}
+          </div>
+          {/* ✅ Timer Display */}
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10">
+            <Clock size={14} className="text-primary" />
+            <span className="text-sm font-mono text-primary">{formatTime(timeElapsed)}</span>
+          </div>
         </div>
         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
           <div
@@ -481,7 +639,7 @@ const ReadingInterface = ({ lesson, onComplete, isCompleted }: { lesson: LessonD
       <div className="p-10">
         <div
           className="lesson-content max-w-4xl mx-auto"
-          dangerouslySetInnerHTML={{ __html: lesson.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHTML(lesson.content || '') }}
         />
       </div>
 
@@ -640,7 +798,8 @@ export default function LessonViewerPage() {
         // Format text content to HTML
         const formatContent = (content: string, type: string): string => {
           if (!content) return '<p>Контент недоступен</p>';
-          if (type === 'text' || type === 'reading') {
+          // Format for text, reading, and video types
+          if (type === 'text' || type === 'reading' || type === 'video') {
             // Convert plain text to HTML paragraphs
             return content
               .split(/\r?\n\r?\n/)  // Split by double newlines
@@ -652,6 +811,56 @@ export default function LessonViewerPage() {
           return content;
         };
 
+        // ✅ FIX: Get course structure to find next/prev lessons
+        let nextLessonId: string | undefined;
+        let prevLessonId: string | undefined;
+
+        try {
+          const structure = await coursesAPI.getCourseStructure(slug);
+          // Flatten all lessons from all modules
+          const allLessons: any[] = [];
+          structure.modules.forEach((module: any) => {
+            module.lessons.forEach((lesson: any) => {
+              allLessons.push(lesson);
+            });
+          });
+
+          // Find current lesson index
+          const currentIndex = allLessons.findIndex(l => l.id.toString() === lessonId);
+          if (currentIndex !== -1) {
+            if (currentIndex > 0) {
+              prevLessonId = allLessons[currentIndex - 1].id.toString();
+            }
+            if (currentIndex < allLessons.length - 1) {
+              nextLessonId = allLessons[currentIndex + 1].id.toString();
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load course structure:', err);
+        }
+
+        // ✅ FIX: Load quiz questions if this is a quiz lesson
+        let quizQuestions: QuizQuestion[] = [];
+        if (lessonData.content_type === 'quiz') {
+          try {
+            const quizData = await lessonsAPI.getLessonQuiz(parseInt(lessonId)) as any;
+            if (quizData && quizData.questions) {
+              quizQuestions = quizData.questions.map((q: any) => ({
+                id: q.id.toString(),
+                question: q.text,
+                options: q.options.map((opt: any, idx: number) => ({
+                  id: `option_${idx}`,
+                  text: opt.text,
+                  isCorrect: opt.is_correct || false
+                })),
+                explanation: q.explanation || ''
+              }));
+            }
+          } catch (quizErr) {
+            console.error('Failed to load quiz questions:', quizErr);
+          }
+        }
+
         setLesson({
           id: lessonData.id.toString(),
           courseSlug: slug,
@@ -662,10 +871,10 @@ export default function LessonViewerPage() {
           duration: lessonData.duration_minutes?.toString() || '0',
           content: formatContent(lessonData.content, lessonData.content_type),
           videoUrl: lessonData.video_url || undefined,
-          quizQuestions: [],
+          quizQuestions,
           resources: [],
-          nextLessonId: undefined,
-          prevLessonId: undefined,
+          nextLessonId,
+          prevLessonId,
           xpReward: 50,
         });
 
@@ -698,8 +907,23 @@ export default function LessonViewerPage() {
     try {
       setCompletionPending(true);
 
-      if (lessonProgressId) {
-        const response = await learningAPI.markLessonCompleted(lessonProgressId) as any;
+      // ✅ FIX: Create lesson progress if it doesn't exist
+      let progressId = lessonProgressId;
+      if (!progressId) {
+        try {
+          // Try to get or create lesson progress
+          const progressData = await learningAPI.getLessonProgress(parseInt(lessonId));
+          if (progressData && Array.isArray(progressData) && progressData.length > 0) {
+            progressId = progressData[0].id;
+            setLessonProgressId(progressId);
+          }
+        } catch (err) {
+          console.error('Failed to get/create lesson progress:', err);
+        }
+      }
+
+      if (progressId) {
+        const response = await learningAPI.markLessonCompleted(progressId) as any;
         setIsCompleted(true);
         await refreshUser();
 
@@ -708,10 +932,17 @@ export default function LessonViewerPage() {
         if (xpAwarded > 0) {
           addToast({
             type: 'success',
-            title: 'Урок завершён!',
+            title: '✅ Урок завершён!',
             message: `+${xpAwarded} XP получено! 🎉`,
-            duration: 5000,
+            duration: 3000,
           });
+
+          // ✅ FIX: Auto-redirect to next lesson after 1.5 seconds
+          if (lesson.nextLessonId) {
+            setTimeout(() => {
+              router.push(`/courses/${slug}/${lesson.nextLessonId}`);
+            }, 1500);
+          }
         } else {
           addToast({
             type: 'info',
@@ -805,7 +1036,21 @@ export default function LessonViewerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {lesson.type === 'video' && <VideoPlayer lesson={lesson} onComplete={handleComplete} />}
+          {lesson.type === 'video' && (
+            <>
+              <VideoPlayer lesson={lesson} onComplete={handleComplete} />
+              {/* Video Content/Transcript */}
+              {lesson.content && (
+                <div className="cyber-card p-6">
+                  <h3 className="text-lg font-bold mb-4">📝 Содержание урока</h3>
+                  <div
+                    className="lesson-content prose prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(lesson.content || '') }}
+                  />
+                </div>
+              )}
+            </>
+          )}
           {lesson.type === 'quiz' && <QuizInterface lesson={lesson} onComplete={handleComplete} />}
           {lesson.type === 'reading' && <ReadingInterface lesson={lesson} onComplete={handleComplete} isCompleted={isCompleted} />}
           {lesson.type === 'project' && <ProjectInterface lesson={lesson} onComplete={handleComplete} isCompleted={isCompleted} />}
@@ -846,41 +1091,49 @@ export default function LessonViewerPage() {
             {/* Spacer to push next buttons to the right */}
             <div className="flex-1" />
 
-            {/* Mark as Completed Button */}
-            <button
-              type="button"
-              onClick={handleComplete}
-              disabled={completionPending || isCompleted}
-              className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
-                isCompleted
-                  ? 'bg-green-500/20 border border-green-500/40 text-green-400 cursor-not-allowed'
-                  : 'bg-white/5 border border-white/10 hover:bg-white/10'
-              }`}
-            >
-              {completionPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Сохранение...
-                </>
-              ) : isCompleted ? (
-                <>
-                  <CheckCircle size={18} />
-                  Выполнено
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={18} />
-                  Пометить как выполненное
-                </>
-              )}
-            </button>
+            {/* Mark as Completed Button - ✅ FIX: Hide for quiz/project types */}
+            {lesson.type !== 'quiz' && lesson.type !== 'project' && (
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={completionPending || isCompleted}
+                className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                  isCompleted
+                    ? 'bg-green-500/20 border border-green-500/40 text-green-400 cursor-not-allowed'
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                }`}
+              >
+                {completionPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Сохранение...
+                  </>
+                ) : isCompleted ? (
+                  <>
+                    <CheckCircle size={18} />
+                    Выполнено
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={18} />
+                    Пометить как выполненное
+                  </>
+                )}
+              </button>
+            )}
 
-            {/* Next Button */}
+            {/* Next Button - ✅ FIX: Block if quiz/project not completed */}
             {lesson.nextLessonId && (
               <button
                 type="button"
                 onClick={handleNextLesson}
-                className="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center gap-2"
+                disabled={(lesson.type === 'quiz' || lesson.type === 'project') && !isCompleted}
+                className={`px-6 py-3 font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 ${
+                  (lesson.type === 'quiz' || lesson.type === 'project') && !isCompleted
+                    ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed border border-gray-500/30'
+                    : 'bg-gradient-to-r from-primary to-secondary text-white shadow-primary/30 hover:shadow-primary/50'
+                }`}
+                title={(lesson.type === 'quiz' || lesson.type === 'project') && !isCompleted ? 'Пройдите задание, чтобы продолжить' : ''}
               >
                 Следующий
                 <ArrowRight size={18} />

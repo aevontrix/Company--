@@ -4,7 +4,7 @@ from datetime import timedelta
 import environ
 
 # Build paths
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # backend/ directory
 
 # Environment variables
 env = environ.Env(
@@ -46,10 +46,12 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.notifications',
     'apps.gamification',
+    'apps.websockets',  # ✅ Consolidated WebSocket consumers
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ For static files with Daphne/ASGI
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -128,7 +130,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
+
+# WhiteNoise configuration for serving static files with Daphne/ASGI
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -145,7 +157,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+        'onthego.renderers.UnicodeJSONRenderer',  # ✅ Use custom renderer for Cyrillic support
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PARSER_CLASSES': [
@@ -153,6 +165,19 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+    # ✅ Rate limiting (throttling)
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',       # Anonymous users: 100 requests/hour
+        'user': '1000/hour',      # Authenticated users: 1000 requests/hour
+        'login': '5/minute',      # Login attempts: 5/minute (custom)
+        'register': '3/minute',   # Registration: 3/minute (custom)
+        'password_reset': '3/hour',  # Password reset: 3/hour (custom)
+        'search': '30/minute',    # Search API: 30/minute (custom)
+    },
 }
 
 # JWT Settings
@@ -176,7 +201,17 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
 ])
 CORS_ALLOW_CREDENTIALS = True
 
-# ✅ ДОБАВЛЕНО: Разрешить WebSocket соединения
+# ✅ Explicitly define allowed HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# ✅ Allowed headers including WebSocket support
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -187,9 +222,17 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
-    'sec-websocket-extensions',  # ✅ Для WebSocket
-    'sec-websocket-key',          # ✅ Для WebSocket
-    'sec-websocket-version',      # ✅ Для WebSocket
+    'sec-websocket-extensions',  # WebSocket
+    'sec-websocket-key',          # WebSocket
+    'sec-websocket-version',      # WebSocket
+    'sec-websocket-protocol',     # WebSocket subprotocols
+]
+
+# ✅ Expose headers to frontend JavaScript
+CORS_EXPOSE_HEADERS = [
+    'content-length',
+    'content-type',
+    'x-request-id',
 ]
 
 # CSRF Settings for frontend
@@ -273,5 +316,16 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@onthego.com'
+# Development: Use console backend (prints to terminal)
+# Production: Use SMTP backend with proper credentials
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='ONTHEGO <noreply@onthego.com>')
+SERVER_EMAIL = env('SERVER_EMAIL', default='ONTHEGO <server@onthego.com>')
+
+# Frontend URL for email links
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3000')

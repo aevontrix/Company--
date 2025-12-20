@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { coursesAPI } from '@/lib/api';
+import { coursesAPI, analyticsAPI, type DailyActivity } from '@/lib/api';
+import { wsService } from '@/lib/websocket';
 import {
   Play,
   Target,
@@ -57,6 +58,63 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [weeklyActivity, setWeeklyActivity] = useState<DailyActivity[]>([]);
+
+  // Load weekly activity data
+  const loadActivity = async () => {
+    try {
+      const activities = await analyticsAPI.getWeeklyActivity();
+      setWeeklyActivity(activities);
+    } catch (error) {
+      console.error('Failed to load weekly activity:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadActivity();
+    }
+  }, [user]);
+
+  // ✅ NEW: WebSocket connection for real-time dashboard updates
+  useEffect(() => {
+    if (!user) return;
+
+    const handleDashboardMessage = (data: any) => {
+      console.log('📊 Dashboard update:', data);
+
+      switch (data.type) {
+        case 'dashboard_update':
+          // Reload activity graph when dashboard data changes
+          loadActivity();
+          break;
+
+        case 'xp_gained':
+          // Show console log for XP gain (toast can be added later)
+          console.log(`+${data.amount} XP earned`);
+          loadActivity();
+          break;
+
+        case 'level_up':
+          console.log(`🎉 Level up to ${data.new_level}!`);
+          loadActivity();
+          break;
+
+        case 'lesson_completed':
+          // Reload courses and activity when lesson is completed
+          console.log('✅ Lesson completed');
+          loadActivity();
+          break;
+      }
+    };
+
+    // ✅ FIX: Handle async connect properly
+    wsService.connect('dashboard', handleDashboardMessage);
+
+    return () => {
+      wsService.disconnect('dashboard');
+    };
+  }, [user?.id]);
 
   // Load enrolled courses
   useEffect(() => {
@@ -202,16 +260,25 @@ export default function DashboardPage() {
           </div>
           <div className="chart-container flex items-end justify-between gap-2">
             {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, i) => {
-              const heights = [40, 65, 20, 35, 15, 85, 70];
+              // Get activity for this day (last 7 days in reverse order)
+              const activityIndex = weeklyActivity.length - 7 + i;
+              const activity = activityIndex >= 0 ? weeklyActivity[activityIndex] : null;
+
+              // Calculate height based on time spent (max 2 hours = 100%)
+              const maxMinutes = 120; // 2 hours
+              const minutes = activity ? Math.floor(activity.time_spent / 60) : 0;
+              const height = Math.min((minutes / maxMinutes) * 100, 100);
+
               return (
-                <div key={day} className="flex-1 flex flex-col items-center gap-2">
+                <div key={day} className="flex-1 flex flex-col items-center gap-2 group">
                   <div
                     className="w-full rounded-t-lg transition-all duration-300 hover:opacity-80"
                     style={{
-                      height: `${heights[i]}%`,
-                      background: 'linear-gradient(180deg, #7c3aed 0%, #a78bfa 100%)',
-                      boxShadow: '0 0 10px rgba(124, 58, 237, 0.3)',
+                      height: `${height || 5}%`, // Minimum 5% for visibility
+                      background: height > 0 ? 'linear-gradient(180deg, #7c3aed 0%, #a78bfa 100%)' : 'rgba(255,255,255,0.05)',
+                      boxShadow: height > 0 ? '0 0 10px rgba(124, 58, 237, 0.3)' : 'none',
                     }}
+                    title={activity ? `${minutes} мин, ${activity.lessons_completed} уроков` : 'Нет данных'}
                   />
                   <span className="text-xs text-text-secondary">{day}</span>
                 </div>

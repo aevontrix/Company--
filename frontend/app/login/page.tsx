@@ -50,7 +50,24 @@ export default function LoginPage() {
       await login(formData.email, formData.password);
       router.push('/dashboard');
     } catch (error: any) {
-      setErrors({ submit: error.message || 'Ошибка входа' });
+      // ✅ FIX: Better error messages for different error types
+      let errorMessage = 'Ошибка входа';
+
+      if (error.message) {
+        if (error.message.includes('Network') || error.message.includes('fetch')) {
+          errorMessage = 'Ошибка сети. Проверьте подключение к интернету.';
+        } else if (error.message.includes('401') || error.message.includes('credentials')) {
+          errorMessage = 'Неверный email или пароль';
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Пользователь не найден';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Ошибка сервера. Попробуйте позже.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }

@@ -35,6 +35,13 @@ class UserProfile(models.Model):
         db_table = 'gamification_user_profiles'
         verbose_name = 'Gamification Profile'
         verbose_name_plural = 'Gamification Profiles'
+        # ✅ FIX: Add indexes for performance
+        indexes = [
+            models.Index(fields=['xp'], name='idx_user_xp'),  # For leaderboard queries
+            models.Index(fields=['level'], name='idx_user_level'),  # For level filtering
+            models.Index(fields=['last_activity_date'], name='idx_last_activity'),  # For streak checks
+            models.Index(fields=['-xp'], name='idx_xp_desc'),  # For leaderboard DESC
+        ]
     
     def __str__(self):
         return f"{self.user.username} - Level {self.level} ({self.xp} XP)"

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import { getPasswordStrength } from '@/lib/utils/passwordStrength';
 
 // ============================================================
 // REGISTRATION PAGE - ARCHITECT ZERO DESIGN
@@ -24,6 +25,12 @@ export default function RegisterPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  // Password strength calculation
+  const passwordStrength = useMemo(
+    () => getPasswordStrength(formData.password),
+    [formData.password]
+  );
 
   const countries = [
     'Россия', 'Казахстан', 'Беларусь', 'Украина', 'США', 'Канада',
@@ -48,6 +55,7 @@ export default function RegisterPage() {
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Некорректный email';
     if (!formData.password) newErrors.password = 'Введите пароль';
     else if (formData.password.length < 8) newErrors.password = 'Минимум 8 символов';
+    else if (passwordStrength.score < 2) newErrors.password = 'Пароль слишком слабый';
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Пароли не совпадают';
     }
@@ -381,6 +389,49 @@ export default function RegisterPage() {
               {errors.password && (
                 <div style={{ marginTop: '6px', fontSize: '12px', color: '#FF4D4D' }}>
                   {errors.password}
+                </div>
+              )}
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <div style={{ marginTop: '8px' }}>
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          flex: 1,
+                          height: '4px',
+                          borderRadius: '2px',
+                          background: i < passwordStrength.score
+                            ? passwordStrength.score <= 1 ? '#FF4D4D'
+                              : passwordStrength.score === 2 ? '#FFB84D'
+                              : passwordStrength.score === 3 ? '#4DBDFF'
+                              : passwordStrength.score === 4 ? '#4DFF77'
+                              : '#00FFFF'
+                            : 'rgba(255, 255, 255, 0.1)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      color: passwordStrength.score <= 1 ? '#FF4D4D'
+                        : passwordStrength.score === 2 ? '#FFB84D'
+                        : passwordStrength.score === 3 ? '#4DBDFF'
+                        : passwordStrength.score === 4 ? '#4DFF77'
+                        : '#00FFFF',
+                      fontWeight: 500,
+                    }}>
+                      {passwordStrength.label}
+                    </span>
+                    {passwordStrength.feedback.length > 0 && (
+                      <span style={{ fontSize: '10px', color: '#888888' }}>
+                        {passwordStrength.feedback[0]}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

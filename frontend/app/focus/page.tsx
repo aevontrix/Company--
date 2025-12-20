@@ -1,10 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Timer, Play, Pause, RotateCcw, Coffee, Target, Zap, Trophy, Lightbulb } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Timer, Play, Pause, RotateCcw, Coffee, Target, Zap, Trophy, Lightbulb, Save } from 'lucide-react';
 
 type TimerMode = 'focus' | 'break' | 'longBreak';
 type TimerStatus = 'idle' | 'running' | 'paused';
+
+interface FocusState {
+  mode: TimerMode;
+  status: TimerStatus;
+  timeLeft: number;
+  completedSessions: number;
+  totalXP: number;
+  sessionStartTime: number | null;
+}
+
+const STORAGE_KEY = 'onthego_focus_state';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function FocusModePage() {
   const [mode, setMode] = useState<TimerMode>('focus');
@@ -12,6 +24,19 @@ export default function FocusModePage() {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const statusRef = useRef(status);
+  const modeRef = useRef(mode);
+  const timeLeftRef = useRef(timeLeft);
+
+  // Update refs on state changes
+  useEffect(() => {
+    statusRef.current = status;
+    modeRef.current = mode;
+    timeLeftRef.current = timeLeft;
+  }, [status, mode, timeLeft]);
 
   const durations: Record<TimerMode, number> = {
     focus: 25 * 60,
@@ -19,6 +44,120 @@ export default function FocusModePage() {
     longBreak: 15 * 60,
   };
 
+  // ✅ Save session to API
+  const saveSessionToAPI = useCallback(async (completed: boolean) => {
+    if (modeRef.current !== 'focus') return; // Only save focus sessions
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (!token) return;
+
+    const elapsed = durations.focus - timeLeftRef.current;
+    const duration = Math.ceil(elapsed / 60); // Convert to minutes
+
+    if (duration < 1) return; // Don't save sessions less than 1 minute
+
+    try {
+      setIsSaving(true);
+      await fetch(`${API_BASE}/gamification/focus-session/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          duration,
+          xp_earned: completed ? 100 : 0,
+          completed,
+          mode: 'focus',
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save focus session:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [durations.focus]);
+
+  // ✅ Save state to localStorage
+  const saveStateToStorage = useCallback(() => {
+    const state: FocusState = {
+      mode: modeRef.current,
+      status: statusRef.current,
+      timeLeft: timeLeftRef.current,
+      completedSessions,
+      totalXP,
+      sessionStartTime,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [completedSessions, totalXP, sessionStartTime]);
+
+  // ✅ Load state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const state: FocusState = JSON.parse(saved);
+
+        // Calculate elapsed time if was running
+        if (state.status === 'running' && state.sessionStartTime) {
+          const elapsed = Math.floor((Date.now() - state.sessionStartTime) / 1000);
+          const adjustedTimeLeft = Math.max(0, state.timeLeft - elapsed);
+
+          if (adjustedTimeLeft > 0) {
+            setTimeLeft(adjustedTimeLeft);
+            setStatus('paused'); // Resume as paused
+          } else {
+            // Timer finished while away
+            setTimeLeft(durations[state.mode]);
+            setStatus('idle');
+          }
+        } else {
+          setTimeLeft(state.timeLeft);
+          setStatus(state.status === 'running' ? 'paused' : state.status);
+        }
+
+        setMode(state.mode);
+        setCompletedSessions(state.completedSessions);
+        setTotalXP(state.totalXP);
+      } catch (e) {
+        console.error('Failed to restore focus state:', e);
+      }
+    }
+  }, []);
+
+  // ✅ Beforeunload warning and session save
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Save state first
+      saveStateToStorage();
+
+      // Warn if timer is running
+      if (statusRef.current === 'running') {
+        // Save partial session to API
+        saveSessionToAPI(false);
+
+        e.preventDefault();
+        e.returnValue = 'У вас активна сессия фокусировки. Вы уверены, что хотите покинуть страницу?';
+        return e.returnValue;
+      }
+    };
+
+    // Save state periodically (every 10 seconds when running)
+    const saveInterval = setInterval(() => {
+      if (statusRef.current === 'running') {
+        saveStateToStorage();
+      }
+    }, 10000);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      clearInterval(saveInterval);
+    };
+  }, [saveStateToStorage, saveSessionToAPI]);
+
+  // ✅ Timer effect with session tracking
   useEffect(() => {
     if (status !== 'running') return;
 
@@ -29,6 +168,8 @@ export default function FocusModePage() {
           if (mode === 'focus') {
             setCompletedSessions((s) => s + 1);
             setTotalXP((xp) => xp + 100);
+            // ✅ Save completed session to API
+            saveSessionToAPI(true);
             setMode('break');
             return durations.break;
           }
@@ -39,13 +180,27 @@ export default function FocusModePage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [status, mode]);
+  }, [status, mode, saveSessionToAPI]);
 
-  const handleStart = () => setStatus('running');
-  const handlePause = () => setStatus('paused');
+  // ✅ Track session start time when starting
+  const handleStart = () => {
+    if (status !== 'running') {
+      setSessionStartTime(Date.now());
+    }
+    setStatus('running');
+  };
+
+  const handlePause = () => {
+    setStatus('paused');
+    saveStateToStorage();
+  };
+
   const handleReset = () => {
     setStatus('idle');
     setTimeLeft(durations[mode]);
+    setSessionStartTime(null);
+    // Clear saved state on reset
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleModeChange = (newMode: TimerMode) => {

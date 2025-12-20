@@ -3,7 +3,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { gamificationAPI, GamificationStats } from '@/lib/api';
-import { connectDashboard, connectStreak, wsService } from '@/lib/websocket';
 import { useAuth } from './AuthContext';
 
 interface GamificationContextType {
@@ -65,49 +64,14 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated]);
 
-  // Handle real-time dashboard updates via WebSocket
-  const handleDashboardUpdate = useCallback((data: any) => {
-    console.log('📊 Dashboard update received:', data);
-
-    if (data.type === 'xp_update' || data.type === 'level_up') {
-      setStats((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          xp: data.xp ?? prev.xp,
-          level: data.level ?? prev.level,
-          progress: data.progress ?? prev.progress,
-        };
-      });
-    }
-
-    if (data.type === 'badge_unlocked') {
-      setStats((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          badges: [...prev.badges, data.badge],
-        };
-      });
-    }
-  }, []);
-
-  // Handle real-time streak updates via WebSocket
-  const handleStreakUpdate = useCallback((data: any) => {
-    console.log('🔥 Streak update received:', data);
-
-    if (data.type === 'streak_update') {
-      setStats((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          streak: data.streak,
-        };
-      });
-    }
-  }, []);
-
-  // Setup WebSocket connections and load initial data
+  // ✅ FIX: Removed duplicate WebSocket handlers (handleDashboardUpdate, handleStreakUpdate)
+  // These are no longer needed since WebSocket connections are handled elsewhere:
+  // - Dashboard page handles its own WebSocket updates
+  // - WebSocketContext handles global progress/streak updates
+  // WebSocket updates are now handled by:
+  // - Dashboard page: handles its own 'dashboard' WebSocket
+  // - WebSocketContext: handles 'progress', 'leaderboard', 'streak' globally
+  // This context now only loads stats via REST API
   useEffect(() => {
     if (!isAuthenticated) {
       setStats(null);
@@ -116,21 +80,7 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
     }
 
     loadStats();
-
-    // Connect to WebSocket for real-time updates
-    const wsDashboard = connectDashboard(handleDashboardUpdate);
-    const wsStreak = connectStreak(handleStreakUpdate);
-
-    return () => {
-      // Cleanup WebSocket connections
-      if (wsDashboard) {
-        wsService.disconnect('dashboard');
-      }
-      if (wsStreak) {
-        wsService.disconnect('streak');
-      }
-    };
-  }, [isAuthenticated, loadStats, handleDashboardUpdate, handleStreakUpdate]);
+  }, [isAuthenticated, loadStats]);
 
   const value = {
     stats,

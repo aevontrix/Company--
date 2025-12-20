@@ -52,6 +52,7 @@ class DailyActivity(models.Model):
     time_spent = models.IntegerField(default=0, help_text='in minutes')
     lessons_completed = models.IntegerField(default=0)
     quizzes_taken = models.IntegerField(default=0)
+    xp_earned = models.IntegerField(default=0, help_text='XP earned on this day')
     streak_preserved = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)

@@ -2,9 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { connectProgress, connectLeaderboard, connectStreak, wsService } from '@/lib/websocket';
+import { connectProgress, connectLeaderboard, connectStreak, connectAchievements, wsService } from '@/lib/websocket';
 import { useToast } from '@/components/notifications/ToastNotification';
 import LevelUpAnimation from '@/components/animations/LevelUpAnimation';
+import AchievementNotification, { AchievementData, AchievementNotificationProvider } from '@/components/ui/AchievementNotification';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -18,6 +19,8 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevel, setNewLevel] = useState(1);
+  // ✅ Achievement notification state
+  const [currentAchievement, setCurrentAchievement] = useState<AchievementData | null>(null);
 
   const toast = useToast();
 
@@ -135,10 +138,65 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Connect to WebSockets
-    const wsProgress = connectProgress(handleProgressMessage);
-    const wsLeaderboard = connectLeaderboard(handleLeaderboardMessage);
-    const wsStreak = connectStreak(handleStreakMessage);
+    // ✅ Handle Achievement Unlocks
+    const handleAchievementMessage = (data: any) => {
+      console.log('🏆 Achievement message:', data);
+
+      switch (data.type) {
+        case 'connection_established':
+          console.log('✅ Connected to achievement updates');
+          break;
+
+        case 'achievement_unlocked':
+          // Map achievement to AchievementData format
+          const achievementData: AchievementData = {
+            type: data.achievement_type === 'badge' ? 'badge' : 'achievement',
+            title: data.title || data.name,
+            description: data.description || 'Новое достижение разблокировано!',
+            icon: data.icon || '🏆',
+            xp: data.xp_reward || data.xp,
+            rarity: mapRarity(data.rarity || data.category),
+          };
+          setCurrentAchievement(achievementData);
+          refreshUser();
+          break;
+
+        case 'badge_earned':
+          setCurrentAchievement({
+            type: 'badge',
+            title: data.title || data.badge_name,
+            description: data.description || 'Новый бейдж получен!',
+            icon: data.icon || '🎖️',
+            xp: data.xp_reward,
+            rarity: mapRarity(data.rarity),
+          });
+          refreshUser();
+          break;
+      }
+    };
+
+    // Helper to map rarity from backend
+    const mapRarity = (rarity?: string): AchievementData['rarity'] => {
+      switch (rarity?.toLowerCase()) {
+        case 'legendary':
+        case 'gold':
+          return 'legendary';
+        case 'epic':
+        case 'platinum':
+          return 'epic';
+        case 'rare':
+        case 'silver':
+          return 'rare';
+        default:
+          return 'common';
+      }
+    };
+
+    // ✅ FIX: Connect to WebSockets (async, no need to store return value)
+    connectProgress(handleProgressMessage);
+    connectLeaderboard(handleLeaderboardMessage);
+    connectStreak(handleStreakMessage);
+    connectAchievements(handleAchievementMessage);
 
     // Cleanup on unmount
     return () => {
@@ -146,6 +204,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       wsService.disconnect('progress');
       wsService.disconnect('leaderboard');
       wsService.disconnect('streak');
+      wsService.disconnect('achievements');
       setIsConnected(false);
     };
   }, [isAuthenticated, user?.id, refreshUser]);
@@ -168,6 +227,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
           onComplete={() => setShowLevelUp(false)}
         />
       )}
+
+      {/* ✅ Achievement Notification */}
+      <AchievementNotification
+        achievement={currentAchievement}
+        onClose={() => setCurrentAchievement(null)}
+      />
     </WebSocketContext.Provider>
   );
 }

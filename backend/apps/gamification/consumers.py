@@ -1,4 +1,12 @@
 """
+⚠️ DEPRECATED - This file is kept for reference only
+All consumers have been moved to apps.websockets.consumers
+
+Use:
+    from apps.websockets import consumers
+    or
+    from apps.websockets.consumers import DashboardConsumer, ProgressConsumer, etc.
+
 WebSocket Consumers for Real-time Updates
 Handles live updates for progress, leaderboard, achievements, and streaks
 """

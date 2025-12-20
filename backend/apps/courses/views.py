@@ -8,6 +8,10 @@ except Exception:
     DjangoFilterBackend = None
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+from onthego.throttles import SearchRateThrottle
 from .models import Category, Course, Module, Lesson, Quiz, Question
 from .serializers import (
     CategorySerializer, CourseListSerializer, CourseDetailSerializer,
@@ -35,7 +39,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    """Course endpoints"""
+    """Course endpoints with caching and rate limiting"""
 
     queryset = Course.objects.all()
     serializer_class = CourseListSerializer
@@ -47,11 +51,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'rating', 'enrolled_count']
     ordering = ['-created_at']
 
+    def get_throttles(self):
+        """Apply search throttle when search query is present"""
+        if self.request.query_params.get('search'):
+            return [SearchRateThrottle()]
+        return []
+
     def get_permissions(self):
         """Allow any user to view courses"""
         if self.action in ['list', 'retrieve', 'course_structure', 'modules']:
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    # ✅ FIX: Cache course list for 5 minutes
+    @method_decorator(cache_page(60 * 5, key_prefix='courses_list'))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    # ✅ FIX: Cache course detail for 10 minutes
+    @method_decorator(cache_page(60 * 10, key_prefix='course_detail'))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -198,40 +218,58 @@ class CourseViewSet(viewsets.ModelViewSet):
         """Enroll in course"""
         from apps.learning.models import CourseEnrollment
         from django.utils import timezone
+        from django.db import transaction
 
         course = self.get_object()
         user = request.user
 
-        # Check if already enrolled
-        existing_enrollment = CourseEnrollment.objects.filter(
-            user=user,
-            course=course
-        ).first()
+        # ✅ FIX: Use atomic transaction to prevent race condition
+        with transaction.atomic():
+            # Use select_for_update to lock the row during enrollment
+            existing_enrollment = CourseEnrollment.objects.select_for_update().filter(
+                user=user,
+                course=course
+            ).first()
 
-        if existing_enrollment:
-            if existing_enrollment.status == 'dropped':
-                # Re-activate dropped enrollment
-                existing_enrollment.status = 'active'
-                existing_enrollment.save()
-                return Response({
-                    'message': 'Successfully re-enrolled in course',
-                    'enrollment_id': str(existing_enrollment.id),
-                    'status': existing_enrollment.status
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'error': 'Already enrolled in this course',
-                    'enrollment_id': str(existing_enrollment.id),
-                    'status': existing_enrollment.status
-                }, status=status.HTTP_400_BAD_REQUEST)
+            if existing_enrollment:
+                if existing_enrollment.status == 'dropped':
+                    # Re-activate dropped enrollment
+                    existing_enrollment.status = 'active'
+                    existing_enrollment.save()
+                    return Response({
+                        'message': 'Successfully re-enrolled in course',
+                        'enrollment_id': str(existing_enrollment.id),
+                        'status': existing_enrollment.status
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return Response({
+                        'error': 'Already enrolled in this course',
+                        'enrollment_id': str(existing_enrollment.id),
+                        'status': existing_enrollment.status
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create new enrollment
-        enrollment = CourseEnrollment.objects.create(
-            user=user,
-            course=course,
-            status='active',
-            started_at=timezone.now()
-        )
+            # Create new enrollment
+            enrollment = CourseEnrollment.objects.create(
+                user=user,
+                course=course,
+                status='active',
+                started_at=timezone.now()
+            )
+
+        # ✅ FIX: Create module and lesson progress for all modules/lessons
+        from apps.learning.models import ModuleProgress, LessonProgress
+        for module in course.modules.all():
+            module_progress = ModuleProgress.objects.create(
+                enrollment=enrollment,
+                module=module
+            )
+            # Create lesson progress for all lessons in this module
+            for lesson in module.lessons.all():
+                LessonProgress.objects.create(
+                    module_progress=module_progress,
+                    lesson=lesson,
+                    status='not_started'
+                )
 
         # Increment enrolled count
         course.enrolled_count += 1
@@ -417,16 +455,17 @@ class QuizViewSet(viewsets.ModelViewSet):
             "passed": true
         }
         """
-        from apps.gamification.services import GamificationService
-
-        quiz = self.get_object()
-        answers = request.data.get('answers', [])
-
+        # ✅ FIX: Check authentication BEFORE accessing quiz object
         if not request.user.is_authenticated:
             return Response(
                 {'detail': 'Authentication required to submit quiz.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        from apps.gamification.services import GamificationService
+
+        quiz = self.get_object()
+        answers = request.data.get('answers', [])
 
         # Get all questions for this quiz
         questions = quiz.questions.all()

@@ -46,7 +46,20 @@ def save_focus_session(request):
             profile = UserProfile.objects.get(user=user)
             old_level = profile.level
             profile.add_xp(xp_earned)
-            
+
+            # ✅ FIX: Update DailyActivity with focus session data
+            from apps.analytics.models import DailyActivity
+            from django.utils import timezone
+            today = timezone.now().date()
+            daily_activity, _ = DailyActivity.objects.get_or_create(
+                user=user,
+                date=today,
+                defaults={'time_spent': 0, 'lessons_completed': 0, 'quizzes_taken': 0, 'xp_earned': 0}
+            )
+            daily_activity.time_spent += duration
+            daily_activity.xp_earned += xp_earned
+            daily_activity.save(update_fields=['time_spent', 'xp_earned'])
+
             # Проверить level up
             level_up = profile.level > old_level
             
@@ -244,16 +257,17 @@ def get_leaderboard(request):
 def award_xp(request):
     """
     Начислить XP пользователю
-    
+
     Body:
     {
         "amount": 50,
-        "reason": "Completed lesson"
+        "reason": "Completed lesson"  // or "action"
     }
     """
     user = request.user
     amount = request.data.get('amount', 0)
-    reason = request.data.get('reason', '')
+    # ✅ FIX: Accept both 'reason' and 'action' parameters for frontend compatibility
+    reason = request.data.get('reason') or request.data.get('action', '')
     
     if amount <= 0:
         return Response(

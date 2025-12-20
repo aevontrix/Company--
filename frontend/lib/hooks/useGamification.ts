@@ -64,13 +64,15 @@ export const useGamification = () => {
   useEffect(() => {
     loadStats();
 
-    // Connect to WebSocket for real-time updates
-    const wsDashboard = connectDashboard(handleDashboardUpdate);
-    const wsStreak = connectStreak(handleStreakUpdate);
+    // ✅ FIX: Connect to WebSocket (async, use wsService for cleanup)
+    connectDashboard(handleDashboardUpdate);
+    connectStreak(handleStreakUpdate);
 
     return () => {
-      wsDashboard?.close();
-      wsStreak?.close();
+      // Use wsService.disconnect instead of ws.close() for proper cleanup
+      const wsService = require('../websocket').wsService;
+      wsService.disconnect('dashboard');
+      wsService.disconnect('streak');
     };
   }, [loadStats, handleDashboardUpdate, handleStreakUpdate]);
 
